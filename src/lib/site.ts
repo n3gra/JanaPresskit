@@ -24,20 +24,13 @@ export const SITE = {
   profiles: [INSTAGRAM.href, SOUNDCLOUD.href, YOUTUBE.href],
   /** Link preview, 1200×630 (made by Auditoria/mediciones/scripts/og.py). */
   ogImage: "/og.jpg",
-  /**
-   * PENDING: false until the real launch, so the preview shared with the
-   * client and friends stays out of search results. Flip to true then.
-   */
-  indexable: false,
+  /** Launched on janablack.com (2026-10-27): open to search engines. */
+  indexable: true,
 };
 
 /**
- * The site's address, for absolute URLs (Open Graph needs them). Vercel sets
- * VERCEL_PROJECT_PRODUCTION_URL at build time; replace it with the real
- * domain once there is one.
+ * The site's address, for absolute URLs (Open Graph needs them). Hosted on
+ * Netlify since 2026-10-27, which does not set Vercel's env var, so the
+ * domain is fixed here.
  */
-export const SITE_URL = new URL(
-  process.env.VERCEL_PROJECT_PRODUCTION_URL
-    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-    : "http://localhost:3000",
-);
+export const SITE_URL = new URL("https://janablack.com");
