@@ -1,0 +1,1261 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   JANA — the viewfinder
+   Ground is the warm grey of a reflex focusing screen. Black is only what
+   falls outside the eyepiece. Red belongs to the instrument, not to decoration.
+   --------------------------------------------------------------------------- */
+
+:root {
+  --black: #070706;
+  --black-lift: #12110f;
+
+  --screen: #aeaaa0;
+  --screen-hi: #c9c5ba;
+  --screen-lo: #8b877f;
+  --screen-deep: #6b675f;
+  /* Figma variable sf_300: the hero's ground, under the video. */
+  --sf-300: #a6a39c;
+
+  /* The menu (Menu_Item in Figma): light type on an ink chip, red when active. */
+  --menu-text: #e8e8e8;
+  --menu-active: #f20000;
+  /* One timing for every click (Figma had 1.02s on one item, 0.3s on the rest). */
+  --ease-click: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Measured against --screen (#aeaaa0): 8.2:1, 6.6:1, 4.7:1.
+     Nothing below 4.5:1 carries text on the focusing screen. */
+  --ink: #0d0d0d;
+  --ink-soft: #24221e;
+  --ink-faint: #403d35;
+
+  --paper: #efece4;
+  --signal: #cf2417;
+  --signal-hot: #ff512f;
+
+  --rule: color-mix(in srgb, var(--ink) 28%, transparent);
+  --rule-strong: color-mix(in srgb, var(--ink) 52%, transparent);
+
+  /* written by the Viewfinder each frame */
+  --eye-w: 80vw;
+  --eye-h: 70vh;
+  --eye-x: 10vw;
+  --eye-y: 15vh;
+
+  /* The largest screen the eyepiece fits to — keep equal to STAGE_MAX in
+     lib/viewfinder.ts. Whatever is sized to the screen rather than the stage
+     (the hero's footage) is capped to it too, or a big monitor would crop it
+     differently from the glass it shows through. */
+  --stage-max-w: 1920px;
+  --stage-max-h: 1200px;
+}
+
+@theme inline {
+  --color-black: var(--black);
+  --color-screen: var(--screen);
+  --color-screen-hi: var(--screen-hi);
+  --color-screen-lo: var(--screen-lo);
+  --color-screen-deep: var(--screen-deep);
+  --color-sf-300: var(--sf-300);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-faint: var(--ink-faint);
+  --color-paper: var(--paper);
+  --color-signal: var(--signal);
+}
+
+html {
+  background: var(--black);
+  scrollbar-width: none;
+}
+html::-webkit-scrollbar {
+  display: none;
+}
+
+body {
+  background: var(--black);
+  color: var(--ink);
+  font-family: var(--font-oxanium), sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+::selection {
+  background: var(--signal);
+  color: var(--paper);
+}
+
+:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 3px;
+}
+
+
+.u-meta-sm {
+  font-size: 0.625rem;
+  letter-spacing: 0.2em;
+}
+
+/* ---- Jana's real wordmark, as a mask so it takes any ink ------------------ */
+
+.mark {
+  display: block;
+  background-color: currentColor;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+.mark-bold {
+  -webkit-mask-image: url("/brand/jana-bold.svg");
+  mask-image: url("/brand/jana-bold.svg");
+  aspect-ratio: 522 / 320;
+}
+.mark-stroke {
+  -webkit-mask-image: url("/brand/jana-stroke.svg");
+  mask-image: url("/brand/jana-stroke.svg");
+  aspect-ratio: 597 / 320;
+}
+
+/* ---- Materials ----------------------------------------------------------- */
+
+/* The scanned focusing screen. Offset so the metering circle baked into the
+   scan sits off to one side instead of behind the reading column. */
+.mat-screen {
+  background-color: var(--screen);
+  /* The scanned texture (/textures/viewfinder-ground.webp, cover, centred)
+     is off until the final design pass: no textures before then. */
+}
+
+/* Incandescent red — a blurred bloom, the way it reads on the moodboard. */
+.mat-flare {
+  background: radial-gradient(
+    ellipse 60% 45% at 50% 50%,
+    var(--signal-hot) 0%,
+    var(--signal) 36%,
+    color-mix(in srgb, var(--signal) 40%, transparent) 58%,
+    transparent 76%
+  );
+  filter: blur(22px) saturate(1.3);
+  mix-blend-mode: multiply;
+}
+
+/* Photographic plates sit on the screen, graded into it. */
+.plate {
+  filter: grayscale(1) contrast(1.2) brightness(0.96);
+}
+
+/* ---- The sheet ------------------------------------------------------------
+   The five framings scroll as one sheet, and the eyepiece comes to rest on a
+   framing, never halfway between two: half-scrolled, the sheet reads as two
+   stacked pages instead of one instrument.
+
+   The framing is NOT done with CSS scroll-snap. Snap frames correctly but its
+   animation is not configurable, and measured it moved the sheet 900px in
+   152ms — about 6000px/s — which read as the content lurching past. Both
+   halves (always framed, slow enough to follow) need the travel driven on our
+   own clock, so it lives in useSheetTravel.ts. */
+
+.sheet {
+  scroll-behavior: auto; /* the travel is animated in JS; never twice */
+}
+
+/* ---- Framings ------------------------------------------------------------ */
+
+.framing {
+  --pad-x: 0.055;
+  --pad-y: 0.085;
+  padding: calc(var(--eye-y) + var(--eye-h) * var(--pad-y))
+    calc(var(--eye-x) + var(--eye-w) * var(--pad-x));
+}
+.framing[data-inset="wide"] {
+  --pad-x: 0.14;
+  --pad-y: 0.16;
+}
+.framing[data-inset="dense"] {
+  --pad-x: 0.05;
+  --pad-y: 0.05;
+}
+
+/* Portrait eyepiece: the waist runs the other way, so the insets swap emphasis. */
+@media (max-width: 767px) {
+  .framing {
+    --pad-x: 0.07;
+    --pad-y: 0.06;
+  }
+  .framing[data-inset="wide"] {
+    --pad-x: 0.11;
+    --pad-y: 0.2;
+  }
+  .framing[data-inset="dense"] {
+    --pad-x: 0.06;
+    --pad-y: 0.05;
+  }
+}
+
+/* ---- Stage (SectionStage.tsx) ---------------------------------------------
+   The eyepiece at Figma size, fitted with one transform. The Viewfinder writes
+   --stage-x/y/scale/w/h on its root only when the viewport changes, and
+   data-bp names the family. All tokens below are Figma pixels on that canvas.
+
+   Safe zone = the canvas minus the side margin and the menu's band:
+   - a bar at the bottom: 45 above the glass + 72 tall + 48 clear = 165;
+   - the compact menu at the top (tablet, portrait): down to under its label.
+   Columns are chosen so the player components land on whole columns. */
+
+/* Nothing in the viewfinder shows until it has measured the stage. Its boxes
+   depend on the viewport, and drawn first at these defaults the menu and the
+   reticle jumped into place (a layout shift). The glass and the content are
+   clipped shut until then anyway, so the screen reads the same: black. */
+[data-bp]:not([data-ready]) > * {
+  visibility: hidden;
+  /* Safety net: if the Viewfinder never measures (script blocked, failed or
+     very late), show the page unclipped rather than leave it black forever.
+     An animation outranks the inline clip-path, and it is dropped the moment
+     data-ready lands, so a normal load never sees it. */
+  animation: stage-fallback 0s 4s forwards;
+}
+/* ViewfinderBoot has painted the first frame before React: the glass and the
+   sheet may show now. The menu still waits for data-ready (its markup is the
+   desktop one until React renders the real family). */
+[data-bp][data-booted]:not([data-ready]) > [data-early] {
+  visibility: visible;
+  animation: none;
+}
+@keyframes stage-fallback {
+  to {
+    visibility: visible;
+    clip-path: none;
+  }
+}
+[data-bp] {
+  --stage-x: 0px;
+  --stage-y: 0px;
+  --stage-scale: 1;
+  --stage-w: 1720px;
+  --stage-h: 864px;
+}
+[data-bp="desktop"],
+[data-bp="surface"] {
+  --margin: 80px;
+  --gutter: 24px;
+  --cols: 8;
+  --safe-top: 80px;
+  --safe-bottom: 165px;
+}
+/* Six columns, not eight: at 96px a column, the visor and the control on
+   whole columns ran into the "D"'s curve. */
+[data-bp="tablet"] {
+  --margin: 40px;
+  --gutter: 24px;
+  --cols: 6;
+  --safe-top: 88px; /* the compact menu, in one row */
+  --safe-bottom: 40px; /* = the margin: the same air on the side and below */
+}
+[data-bp="ipad"] {
+  --margin: 40px;
+  --gutter: 24px;
+  --cols: 4;
+  --safe-top: 124px; /* button + section name, stacked */
+  --safe-bottom: 40px; /* = the margin: the same air on the side and below */
+}
+[data-bp="iphone"] {
+  --margin: 16px;
+  --gutter: 16px;
+  --cols: 4;
+  --safe-top: 152px;
+  --safe-bottom: 16px;
+}
+
+.section-stage {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--stage-w);
+  height: var(--stage-h);
+  transform: translate(var(--stage-x), var(--stage-y)) scale(var(--stage-scale));
+  transform-origin: 0 0;
+}
+.stage-safe {
+  position: absolute;
+  inset: var(--safe-top) var(--margin) var(--safe-bottom);
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  column-gap: var(--gutter);
+}
+
+/* ---- Contacto's lens (the glass, Viewfinder.tsx) ----------------------------
+   Figma `Contact` desktop (536:542): a radial fill centred on the window, grey
+   to a thin red ring to black (the glass's ground, FRAMINGS.booking). Figma's
+   ellipse is slightly sheared, which tilts it, and a CSS radial-gradient
+   cannot be. So this draws a circle of 100 (ring) in a 300 box, and the
+   Viewfinder maps it with --lens-m: Figma's matrix, sized to the window's
+   live box, so it follows the eyepiece while it morphs. --lens-soft is how
+   wide the ring's edges are: wide while it fades in, tight once it is there,
+   like a lens pulling focus. No image, no filter. */
+.glass-lens {
+  left: 0;
+  top: 0;
+  width: 300px;
+  height: 300px;
+  transform-origin: 0 0;
+  transform: var(--lens-m, scale(0));
+  background: radial-gradient(
+    circle 100px at 50% 50%,
+    #c5c2b9 calc((1 - var(--lens-soft, 0.05)) * 100%),
+    var(--menu-active) 100%,
+    var(--ink) calc((1 + var(--lens-soft, 0.05)) * 100%)
+  );
+}
+
+/* ---- Presence: decoration leaves and arrives (useSheetTravel.ts) ------------
+   A section's decoration bleeds past its own box (Jana, the feed, the disc,
+   the footage), so mid-travel it showed cut by the section's edge, a straight
+   line sliding across the glass. Now it is never there when the seam passes:
+   as a travel starts, the stage names the destination (data-present) and the
+   way it goes (data-dir); everything else's decoration leaves at once
+   (a transition), and the destination's arrives once the sheet is half way
+   (an animation, coming in from the side the sheet moves from).
+
+   Gated on [data-present], which only the script sets: without it, nothing
+   is ever hidden. Opacity and transform only. Reduced motion: no movement,
+   presence switches at once (the travel jumps anyway). */
+[data-bp] {
+  --lv: -1; /* leaving: up when the sheet goes down */
+  --en: 1; /* arriving: from below when the sheet goes down */
+}
+[data-dir="up"] {
+  --lv: 1;
+  --en: -1;
+}
+/* --o / --i: how far out the leaving decoration is, and how far still to go
+   for the arriving one, 0..1. Unset (1) except while a finger drags the
+   sheet, which scrubs them (useSheetTravel). */
+.fx {
+  --fx-out: none;
+  --fx-in: none;
+}
+.pf-photo.fx {
+  --fx-out: translateX(calc(12% * var(--o, 1)));
+  --fx-in: translateX(calc(12% * var(--i, 1)));
+}
+.pf-feed.fx {
+  --fx-out: translateY(calc(var(--lv) * 90px * var(--o, 1)));
+  --fx-in: translateY(calc(var(--en) * 90px * var(--i, 1)));
+}
+.mp-disc.fx {
+  --fx-out: rotate(calc(-35deg * var(--o, 1))) scale(calc(1 - 0.1 * var(--o, 1)));
+  --fx-in: rotate(calc(35deg * var(--i, 1))) scale(calc(1 - 0.1 * var(--i, 1)));
+}
+/* the queue only fades, in place: its red glow lies over the disc, and slid
+   while the disc turned, it read as a loose band (design, 2026-10-13) */
+.mp-queue.fx {
+  --fx-out: none;
+  --fx-in: none;
+}
+
+[data-present] .fx {
+  opacity: 0;
+  transform: var(--fx-out);
+  transition:
+    opacity 260ms ease-in,
+    transform 360ms ease-in;
+}
+[data-present="hero"] #hero .fx,
+[data-present="musica"] #musica .fx,
+[data-present="perfil"] #perfil .fx,
+[data-present="booking"] #booking .fx {
+  opacity: 1;
+  transform: none;
+}
+[data-travel][data-present="hero"] #hero .fx,
+[data-travel][data-present="musica"] #musica .fx,
+[data-travel][data-present="perfil"] #perfil .fx,
+[data-travel][data-present="booking"] #booking .fx {
+  /* half way through the travel, whatever its pace (useSheetTravel) */
+  animation: fx-in 800ms cubic-bezier(0.22, 1, 0.36, 1) calc(var(--travel-ms, 1100ms) * 0.5) backwards;
+}
+@keyframes fx-in {
+  from {
+    opacity: 0;
+    transform: var(--fx-in);
+  }
+}
+/* the footage just fades: it fills the glass, there is nowhere to slide */
+.fx-footage {
+  --fx-out: none;
+  --fx-in: none;
+}
+[data-fx-instant] .fx {
+  transition: none;
+}
+/* A finger dragging the sheet: the decoration follows it, no easing of its
+   own. Let go, it eases on from wherever the finger left it — back to rest,
+   or on into the travel. */
+[data-finger] .fx {
+  transition: none;
+}
+[data-finger][data-present="hero"] #hero .fx,
+[data-finger][data-present="musica"] #musica .fx,
+[data-finger][data-present="perfil"] #perfil .fx,
+[data-finger][data-present="booking"] #booking .fx {
+  opacity: calc(1 - var(--o));
+  transform: var(--fx-out);
+}
+[data-finger][data-next="hero"] #hero .fx,
+[data-finger][data-next="musica"] #musica .fx,
+[data-finger][data-next="perfil"] #perfil .fx,
+[data-finger][data-next="booking"] #booking .fx {
+  opacity: calc(1 - var(--i));
+  transform: var(--fx-in);
+}
+/* the arriving decoration was already partly in: it eases the rest of the
+   way (the transition above) instead of replaying its arrival from nothing */
+[data-fx-scrubbed] .fx {
+  animation: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-present] .fx {
+    transition: none;
+    animation: none !important;
+    transform: none;
+  }
+}
+
+/* ---- The tube's curve at the rim (Viewfinder.tsx, .glass-edge) --------------
+   The eyepiece reads as bulging glass without bending a pixel (design,
+   2026-10-13; a live displacement filter on moving content is the cost H15
+   measured). Every mark is a stroke of the eyepiece's own outline, clipped to
+   its inside, so only the inner half shows and it follows the morph:
+   - shading: twelve strokes, wide to narrow, 3.5% each, adding up to a
+     smooth falloff toward the rim (~35% dark at the edge), no blur;
+   - a fringe: red and blue strokes pulled 2px apart sideways, the colour
+     split of a lens's edge;
+   - a sheen: a stroke whose white fades out a third of the way down, light
+     catching the top of the bulge.
+   --short (paint) is the window's short side, so it scales with the glass. */
+.glass-edge {
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.glass-edge__shade {
+  stroke: #000;
+  stroke-opacity: 0.035;
+  stroke-width: calc(var(--short, 600px) * 0.3 * var(--k));
+}
+/* Touch screens: half the strokes at twice the strength, the same falloff
+   for half the drawing (the rim still added glitches on the S23, 2026-10-13) */
+@media (hover: none) {
+  .glass-edge__shade:nth-of-type(even) {
+    display: none;
+  }
+  .glass-edge__shade {
+    stroke-opacity: 0.07;
+  }
+}
+.glass-edge__fringe {
+  stroke-width: 3px;
+}
+.glass-edge__fringe--r {
+  stroke: rgb(255 50 40 / 0.35);
+  transform: translateX(2px);
+}
+.glass-edge__fringe--b {
+  stroke: rgb(70 130 255 / 0.35);
+  transform: translateX(-2px);
+}
+.glass-edge__sheen {
+  stroke: url(#eye-sheen);
+  stroke-opacity: 0.35;
+  stroke-width: calc(var(--short, 600px) * 0.05);
+}
+
+/* ---- The VCR's on-screen display (ScreenHud.tsx) ----------------------------
+   A thin red frame around the stage, and one item in each of its corners,
+   small and grey (#8f8f8f on the surround: 6:1). Over the content's z-order
+   but it only sits in the margins; under the CRT glass (40), so it gets the
+   tube's texture. Only the controls take a pointer.
+
+   Frame and display follow the stage, not the screen's edges (feedback,
+   2026-10-20): on a big screen the stage stops growing and the corners were
+   far from everything. Nor the glass: it changes size per section
+   (Contacto's is smaller) and they would jump with it. The stage is centred,
+   so the gap on the right and below equals --stage-x / --stage-y. */
+.hud {
+  position: absolute;
+  inset: 0;
+  z-index: 35;
+  pointer-events: none;
+  font-family: var(--font-oswald), sans-serif;
+  font-size: 13px;
+  line-height: 1;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8f8f8f;
+  /* The frame halves the empty band between the screen's edge and the glass,
+     on every side (design, 2026-10-20). The glass meaning the nearest of any
+     section's (--hull-*, Viewfinder.tsx): Booking's lens is taller than the
+     stage on landscape screens and would cross a frame drawn from the stage. */
+  --fr-x: calc(var(--hull-x, var(--stage-x)) / 2);
+  --fr-y: calc(var(--hull-y, var(--stage-y)) / 2);
+}
+/* the frame's box; its pincushion outline is drawn in it (ScreenHud.tsx) */
+.hud__frame {
+  position: absolute;
+  inset: var(--fr-y) var(--fr-x);
+}
+.hud__outline {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: none;
+  stroke: #808080; /* the HUD's labels' grey (.hud__role), design 2026-10-20 */
+  stroke-width: 1.5px;
+  stroke-linejoin: miter;
+}
+.hud > :not(.hud__frame) {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  /* inside the frame's corners, clear of its curve: 20px down (less where
+     the band down to the stage is thinner), and in from the side by that
+     plus half the corner's radius, so the text never sits on the bend. The
+     stage, not the hull: Booking's taller lens is narrow and centred, it
+     never reaches the corners. */
+  --in-y: max(4px, min(20px, (var(--stage-y) - var(--fr-y) - 1em) / 2));
+  --in-x: calc(var(--in-y) + min(40px, var(--fr-y)) / 2);
+  --m-y: calc(var(--fr-y) + var(--in-y));
+  --m-x: calc(var(--fr-x) + var(--in-x));
+}
+/* Phones: the margins are too thin for a frame and its corners (it read as
+   cramped, design 2026-10-20). The display sits on the screen's edges. */
+[data-bp="iphone"] .hud__frame {
+  display: none;
+}
+[data-bp="iphone"] .hud > :not(.hud__frame) {
+  --m-y: 12px;
+  --m-x: 12px;
+}
+.hud__tl {
+  top: var(--m-y);
+  left: var(--m-x);
+}
+.hud__tr {
+  top: var(--m-y);
+  right: var(--m-x);
+  font-variant-numeric: tabular-nums;
+}
+.hud__bl {
+  bottom: var(--m-y);
+  left: var(--m-x);
+}
+.hud__br {
+  bottom: var(--m-y);
+  right: var(--m-x);
+  pointer-events: auto;
+}
+.hud a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 200ms ease;
+}
+/* the name is the link: brighter than its role, and underlined on hover */
+.hud__br {
+  gap: 0.6em;
+}
+.hud__role {
+  color: #808080; /* 5:1 on the surround: the floor for small type is 4.5 */
+}
+.hud a {
+  color: #b5b5b5;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 0.3em;
+  transition:
+    color 200ms ease,
+    text-decoration-color 200ms ease;
+}
+.hud a:hover,
+.hud a:focus-visible {
+  color: #e8e8e8;
+  text-decoration-color: currentColor;
+}
+.hud a:focus-visible {
+  outline: 1px solid currentColor;
+  outline-offset: 3px;
+}
+/* PLAY / PAUSE, the site's pause (WCAG 2.2.2, ScreenHud.tsx). As bright as
+   the credit, since it is a control too. The padding is the hit area (at
+   least 24px, WCAG 2.5.8, even with the phone's 10px type); the corner is
+   pulled out by as much, so the words stay where the caption was. */
+.hud__play {
+  --pad: 8px;
+  bottom: calc(var(--m-y) - var(--pad));
+  left: calc(var(--m-x) - var(--pad));
+  padding: var(--pad);
+  min-height: 24px;
+  border: 0;
+  background: none;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: #b5b5b5;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: color 200ms ease;
+}
+.hud__play:hover,
+.hud__play:focus-visible {
+  color: #e8e8e8;
+}
+.hud__play:focus-visible {
+  outline: 1px solid currentColor;
+  outline-offset: -2px;
+}
+
+/* Paused: everything that moves on its own holds its frame. The video and
+   the counter stop in JS (lib/motion.ts). */
+[data-paused] .crt > *,
+[data-paused] .hud__rec,
+[data-paused] .pf-feed__track {
+  animation-play-state: paused;
+}
+
+/* the dot: a slow pulse, once a second, never a flash (WCAG 2.3.1) */
+.hud__rec {
+  width: 0.6em;
+  height: 0.6em;
+  border-radius: 50%;
+  background: var(--menu-active);
+  animation: hud-rec 2s ease-in-out infinite;
+}
+@keyframes hud-rec {
+  50% {
+    opacity: 0.25;
+  }
+}
+/* phones: smaller, and the margins are thin */
+[data-bp="iphone"] .hud {
+  font-size: 10px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hud__rec {
+    animation: none;
+  }
+}
+
+/* ---- The monitor's glass (Viewfinder.tsx, .crt) ----------------------------
+   An old tube's look over the whole screen, surround and menu included
+   (design, 2026-10-13, after a 21st.dev ASCII-recipe video): fine scanlines
+   that crawl a pixel at a time, grain that jumps every frame, a few tracking
+   lines that skip about, and a faint bright band rolling down. Over the menu
+   (30), but it never takes a pointer, so everything under it still works.
+
+   Cheap by construction (H8, H15): nothing is blurred or blended live. Each
+   layer is a static image or gradient moved by transform, on the compositor.
+   The grain is a baked 128px tile (Auditoria/mediciones/scripts/noise.mjs).
+   No flashing: every brightness change is a few percent (WCAG 2.3.1); with
+   reduced motion only the still scanlines stay. */
+.crt {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  overflow: hidden;
+  pointer-events: none;
+}
+.crt > * {
+  position: absolute;
+  left: 0;
+  right: 0;
+}
+
+/* one dark line every 3px, crawling down a pixel per step */
+.crt__lines {
+  top: -3px;
+  bottom: 0;
+  background: repeating-linear-gradient(rgb(0 0 0 / 0.16) 0 1px, transparent 1px 3px);
+  animation: crt-crawl 0.25s steps(3) infinite;
+  will-change: transform;
+}
+@keyframes crt-crawl {
+  to {
+    transform: translateY(3px);
+  }
+}
+
+/* the grain: one tile, jumped to a new spot every frame or so */
+/* one tile's margin, on the two sides it jumps toward (the moves below stay
+   within 0..127px), not around all four: a smaller texture for the GPU */
+.crt__grain {
+  top: -128px;
+  bottom: 0;
+  left: -128px;
+  right: 0;
+  background: url("/images/fx/noise.webp") 0 0 / 128px 128px;
+  opacity: 0.08;
+  animation: crt-grain 0.4s steps(1, end) infinite;
+  will-change: transform;
+}
+@keyframes crt-grain {
+  0% { transform: translate(0, 0); }
+  12% { transform: translate(91px, 61px); }
+  25% { transform: translate(53px, 106px); }
+  37% { transform: translate(57px, 79px); }
+  50% { transform: translate(19px, 88px); }
+  62% { transform: translate(94px, 13px); }
+  75% { transform: translate(116px, 31px); }
+  87% { transform: translate(70px, 34px); }
+}
+
+/* a faint bright band, rolling down the tube */
+.crt__roll {
+  top: -25%;
+  height: 25%;
+  background: linear-gradient(transparent, rgb(255 255 255 / 0.04) 50%, transparent);
+  animation: crt-roll 7s linear infinite;
+  will-change: transform;
+}
+@keyframes crt-roll {
+  to {
+    transform: translateY(500%);
+  }
+}
+
+/* three tracking lines, skipping from height to height */
+.crt__track {
+  top: 0;
+  bottom: 0;
+  background:
+    linear-gradient(rgb(255 255 255 / 0.09), rgb(255 255 255 / 0.09)) 0 18% / 100% 1px no-repeat,
+    linear-gradient(rgb(0 0 0 / 0.2), rgb(0 0 0 / 0.2)) 0 57% / 100% 2px no-repeat,
+    linear-gradient(rgb(255 255 255 / 0.06), rgb(255 255 255 / 0.06)) 0 83% / 100% 1px no-repeat;
+  animation: crt-track 3.7s steps(1, end) infinite;
+  will-change: transform;
+}
+@keyframes crt-track {
+  0% { transform: translateY(0); }
+  13% { transform: translateY(7%); }
+  27% { transform: translateY(-11%); }
+  41% { transform: translateY(23%); }
+  55% { transform: translateY(-4%); }
+  68% { transform: translateY(15%); }
+  82% { transform: translateY(-19%); }
+}
+
+/* Touch screens: the page's glass is a canvas (CrtCanvas.tsx), drawn once
+   at CSS-pixel resolution. As CSS layers at device pixels, on a Galaxy S23
+   Ultra (~1440x3088) they ran the GPU out of tile memory: unpainted blocks
+   mid-travel, 18 per route (2026-10-13, measured over adb). The menu dialog
+   keeps a still CSS version: it is open only while nothing travels. */
+.crt-canvas {
+  display: none;
+}
+@media (hover: none) {
+  .crt:not(.menu-dialog__crt) {
+    display: none;
+  }
+  .crt-canvas {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 40;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+  .menu-dialog__crt {
+    background:
+      repeating-linear-gradient(rgb(0 0 0 / 0.16) 0 1px, transparent 1px 3px),
+      /* the grain at its 8%, baked in: a background has no opacity of its own */
+      url("/images/fx/noise-still.webp") 0 0 / 128px 128px;
+  }
+  .menu-dialog__crt > * {
+    display: none;
+  }
+}
+
+/* While the sheet travels the GPU already redraws the glass every frame:
+   the tube holds still meanwhile, nobody looks at the grain then. */
+[data-travel] .crt > * {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crt > * {
+    animation: none;
+  }
+  .crt__roll,
+  .crt__track {
+    display: none;
+  }
+}
+
+/* ---- Site menu (SiteMenu.tsx) ---------------------------------------------
+   Sizes are the Figma pixels of each drawing; --menu-scale (written by the
+   Viewfinder) fits them to the eyepiece, so the menu keeps its proportion to
+   the glass like the rest of the design.
+
+   It is anchored to the stage (the shared window), not to the current
+   eyepiece, so the stage only moves it on resize. The bar sits at the foot
+   of the glass in every section but Contacto, whose drawing carries it
+   across the middle (data-place="mid"). */
+
+.site-menu {
+  position: absolute;
+  z-index: 30;
+  left: calc(var(--stage-x) + var(--stage-w) * var(--stage-scale) / 2);
+  /* Its own width, not what is left of the stage right of centre, or the
+     translate below would centre the wrong box. */
+  width: max-content;
+  font-family: var(--font-oswald), sans-serif;
+}
+.site-menu[data-place="hero"] {
+  top: calc(var(--stage-y) + var(--stage-h) * var(--stage-scale) * 0.28);
+}
+.site-menu[data-place="hero"][data-orient="portrait"] {
+  top: calc(var(--stage-y) + var(--stage-h) * var(--stage-scale) * 0.15);
+}
+/* The stage is centred, so the gap under it equals --stage-y. */
+.site-menu[data-place="bar"] {
+  bottom: calc(var(--stage-y) + 45px * var(--menu-scale, 1));
+}
+/* Contacto (audio_archive 453:2313): the bar crosses the middle of its glass,
+   under the rows, as part of the composition — 571 on the 1080 frame, 463
+   below the stage's top. The menu closes and reopens to get there. */
+.site-menu[data-place="mid"] {
+  top: calc(var(--stage-y) + 463px * var(--menu-scale, 1));
+}
+/* Compact: the button and the section's name at the head of the glass (the
+   MusicArchive drawings: the button 20px under its top). Portrait stacks them
+   in the centre; landscape (tablet_h) runs them in one row from the safe
+   zone's left edge, leaving the height to the section. */
+.site-menu[data-compact] {
+  bottom: auto;
+  top: calc(var(--stage-y) + 20px * var(--menu-scale, 1));
+}
+.site-menu[data-compact][data-orient="landscape"] {
+  left: calc(var(--stage-x) + var(--margin) * var(--stage-scale));
+}
+
+.site-menu__scale {
+  transform: translateX(-50%) scale(var(--menu-scale, 1));
+  transform-origin: top center;
+}
+.site-menu[data-place="bar"][data-orient="landscape"] .site-menu__scale {
+  transform-origin: bottom center;
+}
+.site-menu[data-compact][data-orient="landscape"] .site-menu__scale {
+  transform: scale(var(--menu-scale, 1));
+  transform-origin: top left;
+}
+
+/* Closed until its first frame is painted (on the intro's clock, or its own
+   when it reopens somewhere else); from then on JS owns the clip. */
+.site-menu__reveal {
+  position: relative;
+  clip-path: inset(50%);
+}
+.site-menu__seed {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 32px;
+  height: 32px;
+  margin: -16px 0 0 -16px;
+  border-radius: 4px;
+  background: var(--ink);
+  pointer-events: none;
+}
+
+.site-menu__list {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+.site-menu[data-orient="portrait"] .site-menu__list {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.site-menu__compact {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+.site-menu[data-orient="landscape"] .site-menu__compact {
+  flex-direction: row;
+}
+
+/* ---- Menu_Item ------------------------------------------------------------- */
+
+.menu-item {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  height: 34px;
+  padding: 4px;
+  white-space: nowrap;
+  text-transform: uppercase;
+  font-family: var(--font-oswald), sans-serif;
+  font-size: 24px;
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  color: var(--menu-text);
+  transition:
+    color 450ms var(--ease-click),
+    font-size 450ms var(--ease-click),
+    height 450ms var(--ease-click),
+    padding 450ms var(--ease-click);
+}
+/* The chip is drawn behind the text so it can grow without moving anything. */
+.menu-item::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--ink);
+  transition: inset 200ms ease-out;
+}
+/* 44px of target around a chip that reads 34px. */
+.menu-item::after {
+  content: "";
+  position: absolute;
+  inset: -5px 0;
+}
+@media (hover: hover) {
+  a.menu-item[data-state="enable"]:hover::before {
+    inset: 0 -14px;
+  }
+}
+/* Touch has no hover: the chip answers the press instead. */
+a.menu-item[data-state="enable"]:active::before {
+  inset: 0 -14px;
+}
+.menu-item[data-state="active"] {
+  height: 63px;
+  padding: 0 16px 0 64px;
+  font-size: 63px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--menu-active);
+}
+.menu-item[data-state="active"]::before {
+  border-radius: 4px;
+}
+.site-menu[data-compact] .menu-item[data-state="active"] {
+  height: 52px;
+  font-size: 52px;
+}
+/* The iPhone drawing is 354px wide: sized when "Tech-Rider" at 52px barely
+   fit it. That section is gone (2026-10-13); worth revisiting with design. */
+.site-menu[data-narrow][data-place="bar"] .menu-item[data-state="active"] {
+  height: 40px;
+  padding-left: 24px;
+  font-size: 28px;
+}
+
+.menu-logo {
+  height: 64px;
+}
+.menu-logo .mark {
+  height: 56px;
+  width: auto;
+  transition: height 450ms var(--ease-click);
+}
+.menu-logo[data-state="active"] {
+  height: 91px;
+}
+.menu-logo[data-state="active"] .mark {
+  height: 91px;
+}
+.menu-logo::before {
+  border-radius: 4px;
+}
+
+.menu-toggle {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 48px;
+  border-radius: 4px;
+  background: var(--ink);
+  color: var(--menu-text);
+  cursor: pointer;
+}
+
+/* ---- Portrait: the full list, as a modal dialog ---------------------------- */
+
+.menu-dialog {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  background: transparent;
+  color: var(--menu-text);
+}
+.menu-dialog::backdrop {
+  background: transparent;
+}
+/* A TV's channel selector (SiteMenu.tsx, design 2026-10-13). It replaced a
+   white list on Figma's blurred ink ellipse, which read as a different site:
+   now the channels sit on the grid's left margin, the one on air in red on
+   the desktop menu's ink chip behind a cursor (no numbers: design); the set's readout at
+   head and foot; and the tube's glass (.crt) over it, since the dialog lives
+   in the top layer, above the page's own. */
+.menu-dialog {
+  background: radial-gradient(ellipse at 50% 45%, #141312 0%, #070706 75%);
+}
+.menu-dialog__inner {
+  --pad-x: calc(var(--eye-x, 24px) + var(--margin, 16px));
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 24px var(--pad-x) 28px;
+}
+.menu-dialog__head {
+  display: flex;
+  justify-content: flex-end;
+}
+/* the mark and the channels, centred in the height between head and foot */
+.menu-dialog__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  gap: 28px;
+}
+/* the mark leads, big, on the names' line (past the cursor's column) */
+.menu-dialog__mark {
+  align-self: flex-start;
+  margin-left: calc(1.4 * 18px + 18px);
+  color: var(--menu-text);
+  transition: color 200ms ease;
+}
+.menu-dialog__mark .mark {
+  display: block;
+  height: 76px;
+  width: auto;
+}
+.menu-dialog__mark:hover,
+.menu-dialog__mark:focus-visible {
+  color: var(--menu-active);
+}
+.menu-dialog__mark:focus-visible {
+  outline: 2px solid var(--menu-text);
+  outline-offset: 4px;
+}
+[data-bp="ipad"] .menu-dialog__mark .mark {
+  height: 112px;
+}
+[data-bp="tablet"] .menu-dialog__mark .mark {
+  height: 84px;
+}
+.menu-dialog .menu-toggle {
+  width: 48px;
+  height: 48px;
+}
+.menu-dialog__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.channel {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  padding: 6px 0;
+  font-family: var(--font-oswald), sans-serif;
+  text-transform: uppercase;
+  color: var(--menu-text);
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+/* the cursor: a column of its own, lit only on the channel on air */
+.channel__cursor {
+  flex: none;
+  width: 1.4em;
+  font-size: 18px;
+  color: var(--menu-active);
+  visibility: hidden;
+}
+.channel[data-on-air] .channel__cursor {
+  visibility: visible;
+}
+.channel__name {
+  position: relative;
+  padding: 0 12px;
+  margin-left: -12px;
+  font-size: 46px;
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+  transition: color 200ms ease;
+}
+/* the chip behind the name, the desktop menu's: grows in on press/hover */
+.channel__name::before {
+  content: "";
+  position: absolute;
+  inset: 0 100% 0 0;
+  z-index: -1;
+  background: var(--ink);
+  border-radius: 4px;
+  transition: inset 220ms var(--ease-click);
+}
+@media (hover: hover) {
+  .channel:hover .channel__name::before {
+    inset: 0;
+  }
+}
+.channel:active .channel__name::before {
+  inset: 0;
+}
+/* on air: red on its chip, behind the cursor */
+.channel[data-on-air] .channel__name {
+  color: var(--menu-active);
+}
+.channel[data-on-air] .channel__name::before {
+  inset: 0;
+  background: #000;
+}
+.channel:focus-visible {
+  outline: none;
+}
+.channel:focus-visible .channel__name {
+  outline: 2px solid var(--menu-text);
+  outline-offset: 2px;
+}
+.menu-dialog__foot {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  font-family: var(--font-oswald), sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8f8f8f;
+}
+/* its own tube glass: still scanlines and grain (no motion in the menu) */
+.menu-dialog__crt {
+  z-index: 1;
+}
+.menu-dialog__crt > * {
+  animation: none;
+}
+/* tablets: more room */
+[data-bp="ipad"] .channel__name,
+[data-bp="tablet"] .channel__name {
+  font-size: 64px;
+}
+[data-bp="ipad"] .menu-dialog__list,
+[data-bp="tablet"] .menu-dialog__list {
+  gap: 12px;
+}
+/* a short landscape tablet: the list needs the height */
+[data-bp="tablet"] .channel__name {
+  font-size: 52px;
+}
+
+/* Channels tune in once the screen is open (data-revealed), top down, each
+   wiped in left to right in a few stutters, like a set finding the signal.
+   They drop out at once when it starts to close. No flashing: it only
+   uncovers, never blinks. */
+.menu-dialog__list > li,
+.menu-dialog__head,
+.menu-dialog__mark,
+.menu-dialog__foot {
+  opacity: 0;
+  transition: opacity 120ms ease-out;
+}
+.menu-dialog[data-revealed] .menu-dialog__head,
+.menu-dialog[data-revealed] .menu-dialog__mark,
+.menu-dialog[data-revealed] .menu-dialog__foot {
+  opacity: 1;
+}
+.menu-dialog[data-revealed] .menu-dialog__list > li {
+  opacity: 1;
+  animation: channel-in 360ms steps(6, end) both;
+  animation-delay: calc(60ms + var(--i, 0) * 55ms);
+}
+@keyframes channel-in {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* The compact menu's button arrives once, with the layout; after that it
+   stays put while only the section name changes. */
+.site-menu__compact > .menu-toggle {
+  animation: menu-toggle-in 260ms ease-out;
+}
+@keyframes menu-toggle-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* A new section in the compact menu (SiteMenu, CompactName): the old name
+   leaves quickly, the new one comes in over it, and the chip (whose width
+   JS eases) clips whichever word is wider than it for the moment. */
+.menu-item[data-changing] {
+  overflow: hidden;
+}
+.menu-item[data-changing] .menu-name__now {
+  animation: menu-toggle-in 300ms ease-out 100ms backwards;
+}
+.menu-name__was {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  padding: inherit;
+  animation: menu-name-out 200ms ease-in forwards;
+}
+@keyframes menu-name-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes menu-item-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}

@@ -1,0 +1,983 @@
+/* ---------------------------------------------------------------------------
+   MÚSICA — the player scene, drawn on the shared SectionStage.
+   Every size is a literal Figma pixel. The stage is fitted to the eyepiece
+   with one transform, so nothing here depends on the eyepiece's box and
+   nothing re-lays out while it morphs.
+
+   Placement comes from the safe zone's grid (.stage-safe, tokens in
+   globals.css); the components' insides come from the Figma variants:
+   - desktop (1920, and 1366 scaled): player_control_dektop 445:1252 (560x360),
+     player_visor 369x360, item_music 424x80 — MusicArchive 424:567;
+   - surface (1440): player_control_tablet_h 445:1492 (405x280), player_visor
+     287x280, item_music 441x80 — MusicArchive 306:677.
+   Fonts: Oxanium for readouts, Oswald Light for the LCD clock (layout.tsx).
+   --------------------------------------------------------------------------- */
+
+/* Registered so the disc colour can transition instead of snapping per set. */
+@property --disc {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #004fb5;
+}
+
+@keyframes mp-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes mp-enter {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* No ground of its own. The red belongs to the eyepiece glass, which is fixed,
+   so it crossfades instead of sliding in as a seam (see FRAMINGS.musica.ground
+   in lib/viewfinder.ts). */
+.mp-scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  color: #fff;
+  font-family: var(--font-oxanium), sans-serif;
+  transition: --disc 700ms ease;
+}
+
+/* The five disc colours. Six sets, so one repeats (the order is in sets.ts). */
+.mp-scene[data-disc="0"] { --disc: #004fb5; } /* blue   */
+.mp-scene[data-disc="1"] { --disc: #00b54c; } /* green  */
+.mp-scene[data-disc="2"] { --disc: #5200b5; } /* purple */
+.mp-scene[data-disc="3"] { --disc: #b57000; } /* orange */
+.mp-scene[data-disc="4"] { --disc: #94b500; } /* lime   */
+
+/* ---- Sizes per family ------------------------------------------------------
+   The few numbers that change between the drawings. Everything else below is
+   shared. Tablet (landscape) uses Surface's control and visor, and its own
+   queue and disc below. */
+
+.mp-stage {
+  isolation: isolate;
+
+  /* the turntable: the colour disc's size and where it sits in the eyepiece */
+  --disc-s: 740px;
+  --disc-x: 758px;
+  --disc-y: -12px;
+
+  --deck-h: 360px; /* visor and control */
+  --top-h: 155px; /* LCD row inside the control */
+  --keys-h: 161px;
+  --cover: 273px;
+  --clock: 40px;
+  --clock-lh: 1.2;
+  --lcd-pad: 8px 16px 16px;
+  --lcd-gap: 4px;
+  --seek-h: 20px;
+  --step-w: 141;
+  --pp-w: 240;
+  --ctl-pad: 14px;
+
+  /* the queue */
+  --item-h: 80px;
+  --item-title: 24px;
+  --item-meta: 18px;
+  --item-dur: 18px;
+  --queue-pad: 0px; /* item inset inside its columns */
+  --queue-cols: 1 / span 3;
+  --control-cols: 3 / span 3;
+  --deck-gap: 48px;
+}
+[data-bp="surface"] .mp-stage,
+[data-bp="tablet"] .mp-stage {
+  --disc-s: 689px;
+  --disc-x: 435px;
+  --disc-y: 55px;
+
+  --deck-h: 280px;
+  /* Figma: 115 + 121, but its LCD text already overflows 115; the timeline
+     needs the room, so 10px move from the keys to the LCD */
+  --top-h: 125px;
+  --keys-h: 111px;
+  --cover: 193px;
+  --clock: 36px;
+  --clock-lh: 1;
+  --lcd-pad: 6px 12px 8px;
+  --lcd-gap: 2px;
+  --seek-h: 16px;
+  --step-w: 103.5;
+  --pp-w: 160;
+
+  /* the queue runs over the disc here, so it gets the Figma's red glow: born
+     at the list's bottom-left, by the controls, fading off toward the disc on
+     the right (desktop_1440 / tablet_h list_music, axis-aligned) */
+  --queue-glow: radial-gradient(83% 174% at 7% 82%, #ff0004 51%, rgb(255 0 4 / 0) 100%);
+}
+
+/* Tablet held landscape (tablet_h 447:1619): the compact menu takes a row at
+   the top, so the queue is the small one (56px items, three clear) between
+   it and the deck; the blurred end runs up under the menu. */
+[data-bp="tablet"] .mp-stage {
+  --disc-s: 466px;
+  --disc-x: 444px;
+  --disc-y: 77px;
+
+  --item-h: 56px;
+  --item-title: 16px;
+  --item-meta: 14px;
+  --item-dur: 18px;
+  --deck-gap: 24px;
+}
+
+/* Portrait (tablet_v 306:683, mobile_v 306:1253): the disc fills the round
+   head, the queue crosses it, and the control takes the full width at the
+   bottom. There is no cassette visor in these drawings. */
+[data-bp="ipad"] .mp-stage,
+[data-bp="iphone"] .mp-stage {
+  --deck-h: 280px;
+  --top-h: 144px;
+  --keys-h: 104px;
+  --ctl-pad: 8px;
+  --clock: 40px;
+  --clock-lh: 1.2;
+  --lcd-pad: 8px 16px 16px;
+  --lcd-gap: 4px;
+  --seek-h: 20px;
+
+  /* The unit sits in the eyepiece's bottom corners, so its bottom corners are
+     concentric with them: the glass's radius minus the air between the two
+     (the same on the side and below), and each layer inside minus its own
+     padding. The Figma's 24 / 22 / 20 / 16 is this rule on a 40 corner. */
+  --eye-corner: 80px; /* Música's small corner, FRAMINGS in lib/viewfinder.ts */
+  --ctl-foot: calc(var(--eye-corner) - var(--margin));
+  --ctl-radius: 8px 8px var(--ctl-foot) var(--ctl-foot);
+  --keys-radius: 4px 4px calc(var(--ctl-foot) - var(--ctl-pad))
+    calc(var(--ctl-foot) - var(--ctl-pad));
+  --key-foot: calc(var(--ctl-foot) - var(--ctl-pad) - 3px); /* frame padding 2 + border 1 */
+  --face-foot: calc(var(--ctl-foot) - var(--ctl-pad) - 7px); /* + key padding 4 */
+
+  --item-h: 56px;
+  --item-title: 16px;
+  --item-meta: 14px;
+  --item-dur: 18px;
+  --queue-cols: 1 / -1;
+  --control-cols: 1 / -1;
+  --deck-gap: 16px;
+  /* born at the list's foot, by the controls, fading up toward the disc
+     above it (mobile_v list_music 306:1260: centre 201,186 of 402x208) */
+  --queue-glow: radial-gradient(79% 78% at 50% 89%, #ff0004 51%, rgb(255 0 4 / 0) 100%);
+}
+[data-bp="ipad"] .mp-stage {
+  --disc-s: 518px;
+  --disc-x: 73px;
+  --disc-y: 80px;
+  --step-w: 159;
+  --pp-w: 240;
+  --queue-pad: 48px; /* items 488 wide in 584 */
+}
+[data-bp="iphone"] .mp-stage {
+  --disc-s: 304px;
+  --disc-x: 26px;
+  --disc-y: 53px;
+  --step-w: 80;
+  --pp-w: 136;
+  --queue-pad: 8px; /* items 306 wide in 322 */
+}
+[data-bp="ipad"] .mp-cassette,
+[data-bp="iphone"] .mp-cassette {
+  display: none;
+}
+/* Phones keep the readout and the meter: the fader gives its width to the
+   LCD, and a phone's volume lives in its own buttons anyway. */
+[data-bp="iphone"] .mp-vol {
+  display: none;
+}
+/* 182px of LCD: the clock takes the whole first line, so the set's length
+   moves down to the account line instead of disappearing (portrait has no
+   cassette visor to show it). */
+[data-bp="iphone"] .mp-lcd {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto auto auto 1fr;
+  column-gap: 8px;
+}
+[data-bp="iphone"] .mp-lcd__clock {
+  display: contents;
+}
+[data-bp="iphone"] .mp-lcd__time,
+[data-bp="iphone"] .mp-lcd__title,
+[data-bp="iphone"] .mp-seek {
+  grid-column: 1 / -1;
+}
+[data-bp="iphone"] .mp-lcd__total {
+  grid-row: 3;
+  grid-column: 2;
+  align-self: center;
+}
+[data-bp="iphone"] .mp-lcd__meta {
+  grid-row: 3;
+  grid-column: 1;
+}
+
+/* ---- Layout ----------------------------------------------------------------
+   The queue sits on top of the visor and the control and reads from the bottom
+   up; it may run past the top of the glass, where its far end fades out. */
+
+/* minmax(0, ...): the queue is taller than the room above the deck on purpose,
+   so its row must not grow to fit it; `unsafe end` lets it overflow upward. */
+.mp-player {
+  grid-template-rows: minmax(0, 1fr) auto;
+  row-gap: var(--deck-gap);
+}
+.mp-queue {
+  grid-column: var(--queue-cols);
+  grid-row: 1;
+  align-self: unsafe end;
+}
+.mp-cassette {
+  grid-column: 1 / span 2;
+  grid-row: 2;
+}
+.mp-control {
+  grid-column: var(--control-cols);
+  grid-row: 2;
+}
+
+.mp-cover {
+  object-fit: cover;
+}
+
+/* ---- Disc ------------------------------------------------------------------
+   One composition, measured against the colour disc (740 in the desktop
+   drawing): every layer is a fixed fraction of it. */
+
+.mp-disc {
+  position: absolute;
+  left: var(--disc-x);
+  top: var(--disc-y);
+  width: var(--disc-s);
+  height: var(--disc-s);
+}
+.mp-disc > * {
+  position: absolute;
+  max-width: none;
+}
+.mp-disc__plate {
+  left: -5.135%;
+  top: -4.459%;
+  width: 195.27%;
+  height: 109.19%;
+}
+.mp-disc__color {
+  inset: 0;
+}
+.mp-disc__hub {
+  left: 35%;
+  top: 35%;
+  width: 30%;
+  height: 30%;
+}
+.mp-disc__texture {
+  left: 0.405%;
+  top: 0;
+  width: 99.19%;
+  height: 100%;
+}
+.mp-disc__ring {
+  box-sizing: border-box;
+  border: calc(var(--disc-s) * 8 / 740) solid;
+  border-radius: 50%;
+}
+.mp-disc__ring--inner {
+  left: -0.351%;
+  top: -0.351%;
+  width: 100.84%;
+  height: 100.84%;
+  border-color: #f20000;
+}
+.mp-disc__ring--outer {
+  left: -3.649%;
+  top: -3.649%;
+  width: 107.3%;
+  height: 107.3%;
+  border-color: #ca0000;
+}
+
+.mp-color {
+  border-radius: 50%;
+  background: radial-gradient(
+    circle closest-side,
+    #676767 0%,
+    var(--disc) 63%,
+    var(--disc) 100%
+  );
+  mix-blend-mode: hard-light;
+}
+
+/* Black ring with the spindle hole cut out (222 outer, 74 inner). */
+.mp-hub {
+  border-radius: 50%;
+  background: radial-gradient(circle closest-side, transparent 33.3%, #030307 33.6%);
+}
+
+/* Spins only while a set plays; pausing freezes it at the current angle. */
+.mp-texture {
+  animation: mp-spin 7s linear infinite;
+  animation-play-state: paused;
+}
+.mp-scene[data-playing="true"] .mp-texture {
+  animation-play-state: running;
+}
+
+/* ---- Queue ----------------------------------------------------------------- */
+
+/* --shown: how many slots fit (SetQueue measures it on portrait screens).
+   The box is a control: a swipe on it changes the set, not the section. */
+.mp-queue {
+  position: relative;
+  height: calc(var(--shown, 5) * var(--item-h) + 8px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  touch-action: none;
+}
+/* list_music's background where the queue crosses the disc (Figma padding
+   48 / 8 / 48 / 16 around the items). None on desktop, where it does not. */
+.mp-queue::before {
+  content: "";
+  position: absolute;
+  inset: -8px -48px -16px -40px;
+  background: var(--queue-glow, none);
+  pointer-events: none;
+}
+
+/* --p is the ring position (0 = next up, nearest the controls, at the bottom). */
+.mp-queue__slot {
+  position: absolute;
+  top: 0;
+  left: calc(8px + var(--queue-pad));
+  right: var(--queue-pad);
+  height: var(--item-h);
+  transform: translateY(calc((var(--shown, 5) - 1 - var(--p)) * var(--item-h)));
+  transition:
+    transform 520ms cubic-bezier(0.16, 1, 0.3, 1),
+    filter 520ms ease,
+    opacity 200ms ease 260ms;
+}
+
+.mp-queue__slot[data-tier="soft"] {
+  filter: blur(2px);
+  opacity: 0.8;
+}
+.mp-queue__slot[data-tier="far"] {
+  filter: blur(4px);
+  opacity: 0.55;
+}
+/* Fades out fast, fades back in late: it travels around the ring unseen. */
+.mp-queue__slot[data-tier="hidden"] {
+  filter: blur(6px);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 520ms cubic-bezier(0.16, 1, 0.3, 1),
+    filter 520ms ease,
+    opacity 120ms ease 0ms;
+}
+/* A blurred slot comes into focus when you reach for it. */
+.mp-queue__slot:not([data-tier="hidden"]):is(:hover, :focus-within) {
+  filter: none;
+  opacity: 1;
+}
+
+.mp-item {
+  display: flex;
+  align-items: center;
+  gap: 19px;
+  width: 100%;
+  height: 100%;
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.mp-item:hover,
+.mp-item:focus-visible {
+  transform: translateX(8px);
+}
+
+.mp-item__thumb {
+  position: relative;
+  flex: none;
+  width: var(--item-h);
+  height: var(--item-h);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.mp-item__thumb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 2px solid #f20000;
+  border-radius: inherit;
+}
+
+.mp-item__text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.mp-item__title {
+  overflow: hidden;
+  font-size: var(--item-title);
+  font-weight: 500;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mp-item__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #d9d9d9;
+  font-size: var(--item-meta);
+  line-height: 1.28;
+  white-space: nowrap;
+}
+.mp-item__source {
+  color: #fff;
+}
+.mp-item__dur {
+  margin-left: auto;
+  font-size: var(--item-dur);
+}
+
+/* ---- Cassette visor (what is playing) ---------------------------------------- */
+
+.mp-cassette {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  height: var(--deck-h);
+  padding: 16px 14px;
+  background: #040306;
+  border: 2px solid #a6a39c;
+  border-radius: 8px;
+}
+.mp-cassette__inner {
+  position: relative;
+  width: 100%;
+  animation: mp-enter 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.mp-cassette__content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  /* the account and tag run up the right edge */
+  padding-right: 25px;
+}
+.mp-cassette__dur {
+  color: #d9d9d9;
+  font-size: 16px;
+  line-height: 1.25;
+}
+.mp-cassette__cover {
+  position: relative;
+  width: var(--cover);
+  height: var(--cover);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.mp-cassette__title {
+  overflow: hidden;
+  color: #c5c2b9;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Reads bottom to top, account first, like the Figma sidebar. */
+.mp-cassette__side {
+  position: absolute;
+  right: 0;
+  bottom: 52px;
+  display: flex;
+  gap: 19px;
+  margin: 0;
+  color: #c5c2b9;
+  font-size: 16px;
+  white-space: nowrap;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+/* ---- Control unit ------------------------------------------------------------ */
+
+.mp-control {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-sizing: border-box;
+  height: var(--deck-h);
+  padding: var(--ctl-pad);
+  background: #d9d9d9;
+  border-radius: var(--ctl-radius, 8px);
+  box-shadow:
+    0 0 0 2px #a6a39c,
+    0 4px 4px 0 rgba(0, 0, 0, 0.3),
+    0 8px 12px 6px rgba(0, 0, 0, 0.15);
+}
+.mp-control__top {
+  display: flex;
+  gap: 20px;
+  height: var(--top-h);
+}
+
+.mp-lcd {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--lcd-gap);
+  box-sizing: border-box;
+  min-width: 0;
+  height: 100%;
+  padding: var(--lcd-pad);
+  color: #d9d9d9;
+  background: #040306;
+  border: 2px solid #a6a39c;
+  border-radius: 4px;
+  text-shadow: 0 0 4px rgba(217, 217, 217, 0.5);
+  overflow: hidden;
+}
+.mp-lcd__time {
+  font-family: var(--font-oswald), var(--font-oxanium), sans-serif;
+  font-size: var(--clock);
+  font-weight: 300;
+  line-height: var(--clock-lh);
+  font-variant-numeric: tabular-nums;
+}
+/* The clock doubles as the play lamp: its own white while paused, red once
+   the set is actually sounding (data-playing follows the widget, not the key). */
+.mp-lcd__time {
+  transition:
+    color 200ms ease,
+    text-shadow 200ms ease;
+}
+.mp-scene[data-playing="true"] .mp-lcd__time {
+  color: var(--menu-active);
+  text-shadow: 0 0 6px rgb(255 0 4 / 0.6);
+}
+/* Loading (useSoundCloud's `pending`): the clock reads CARGANDO and three dots
+   come in one by one, each always holding its place so nothing shifts. A dot
+   is a few pixels: no flash (WCAG 2.3.1). Still with reduced motion or the
+   site's pause. "SIN SEÑAL" when a play never started. */
+.mp-lcd__status {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.mp-lcd__dots > span {
+  animation: mp-dot 1.2s steps(1, end) infinite;
+}
+.mp-lcd__dots > span:nth-child(2) {
+  animation-name: mp-dot-2;
+}
+.mp-lcd__dots > span:nth-child(3) {
+  animation-name: mp-dot-3;
+}
+@keyframes mp-dot {
+  0% { opacity: 0; }
+  25% { opacity: 1; }
+}
+@keyframes mp-dot-2 {
+  0% { opacity: 0; }
+  50% { opacity: 1; }
+}
+@keyframes mp-dot-3 {
+  0% { opacity: 0; }
+  75% { opacity: 1; }
+}
+/* still: the three dots, all lit */
+[data-paused] .mp-lcd__dots > span {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mp-lcd__dots > span {
+    animation: none;
+  }
+}
+.mp-lcd__clock {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.mp-lcd__total {
+  color: #a6a39c;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.mp-lcd__title,
+.mp-lcd__meta {
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 1.29;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mp-lcd__title {
+  font-weight: 500;
+}
+.mp-lcd__meta {
+  display: flex;
+  gap: 8px;
+}
+
+/* Timeline: the set's own dynamics as bars (real peaks, see levels.ts), lit up to the
+   playhead. Progress is a clip-path / transform, so an update never triggers layout. */
+.mp-seek {
+  position: relative;
+  flex: none;
+  height: var(--seek-h);
+  margin-top: auto;
+  cursor: pointer;
+}
+/* the hit area is taller than the bars */
+.mp-seek::after {
+  content: "";
+  position: absolute;
+  inset: -6px 0;
+}
+.mp-seek__bars {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: #3a393d;
+}
+.mp-seek__bars--lit {
+  fill: #d9d9d9;
+  filter: drop-shadow(0 0 3px rgba(217, 217, 217, 0.55));
+  clip-path: inset(0 calc((1 - var(--f)) * 100%) 0 0);
+  transition: clip-path 240ms linear;
+}
+.mp-seek__head,
+.mp-seek__ghost {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.mp-seek__head {
+  z-index: 1; /* above the rail's ::after hit area, so the grip gets the touch */
+  transform: translateX(calc(var(--f) * 100%));
+  transition: transform 240ms linear;
+}
+.mp-seek__head::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 2px;
+  margin-left: -1px;
+  background: #fff;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+}
+/* a small notch on top, so the playhead reads as a marker and not as a bar */
+.mp-seek__head::after {
+  content: "";
+  position: absolute;
+  top: -3px;
+  left: 0;
+  margin-left: -3px;
+  border: 3px solid transparent;
+  border-top-color: #fff;
+  border-bottom-width: 0;
+}
+/* What a finger takes: 44 px around the playhead, invisible, so the thin line
+   is easy to grab without making the rest of the rail catch the thumb. */
+.mp-seek__grip {
+  position: absolute;
+  top: 50%;
+  left: -22px;
+  width: 44px;
+  height: 44px;
+  margin-top: -22px;
+  pointer-events: auto;
+  touch-action: none;
+}
+.mp-seek[aria-disabled="true"] .mp-seek__grip {
+  pointer-events: none;
+}
+/* where a click would land */
+.mp-seek__ghost {
+  transform: translateX(calc(var(--g) * 100%));
+}
+.mp-seek__ghost::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  background: rgba(217, 217, 217, 0.5);
+}
+.mp-seek[data-drag="true"] .mp-seek__bars--lit,
+.mp-seek[data-drag="true"] .mp-seek__head {
+  transition: none;
+}
+.mp-seek[aria-disabled="true"] {
+  cursor: default;
+  opacity: 0.35;
+}
+
+.mp-audio {
+  display: flex;
+  flex: none;
+  gap: 24px;
+  height: 100%;
+}
+
+/* Volume fader: the rail takes whatever height the row leaves the two icons. */
+.mp-vol {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 24px;
+  color: #585959;
+}
+.mp-vol svg {
+  flex: none;
+  width: 24px;
+  height: 24px;
+}
+.mp-vol__rail {
+  position: relative;
+  flex: 1;
+  width: 24px;
+  cursor: ns-resize;
+  touch-action: none;
+}
+.mp-vol__track {
+  position: absolute;
+  left: 8px;
+  top: 0;
+  width: 8px;
+  height: 100%;
+  background: #1c1b1f;
+  border-radius: 99px;
+  box-shadow: 0 0 0 2px #a6a39c;
+}
+.mp-vol__thumb {
+  position: absolute;
+  left: 0;
+  top: calc((1 - var(--v)) * (100% - 6px));
+  box-sizing: border-box;
+  width: 24px;
+  height: 6px;
+  background: #d9d9d9;
+  border: 1px solid #585959;
+  border-radius: 99px;
+}
+
+/* Level meter: 2 columns x 19 lamps, lit from the bottom. --i (0..1) is each lamp's
+   brightness, written by the requestAnimationFrame loop in Vumetro.tsx (warm-up
+   and afterglow live there); the CSS only turns it into light. The lamps share
+   the column's height, whatever the family. */
+.mp-vu {
+  display: flex;
+  flex: none;
+  gap: 16px;
+}
+.mp-vu__col {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 2px;
+  box-sizing: border-box;
+  width: 12px;
+  height: 100%;
+  padding: 2px;
+  background: #040306;
+  border-radius: 2px;
+}
+.mp-vu__seg {
+  --i: 0;
+  --c: #ff153c;
+  flex: 1;
+  /* Off, a lamp still shows as a dull red cell, so a silent meter reads as
+     a meter and not as two black bars; lit, it is its own colour. */
+  background: color-mix(in srgb, var(--c) calc(22% + 78% * var(--i)), #2b2a2e);
+  border-radius: 1px;
+  box-shadow: 0 0 calc(var(--i) * 5px) calc(var(--i) * 0.6px) rgb(255 0 4 / calc(var(--i) * 0.85));
+}
+/* the last lamps run hotter, like the top of a real meter */
+.mp-vu__seg:nth-child(n + 14) {
+  --c: #ff3d3d;
+}
+.mp-vu__seg:nth-child(n + 17) {
+  --c: #ff7a59;
+}
+/* the peak marker: one pale lamp that holds above the level, then drops */
+.mp-vu__seg[data-peak="true"] {
+  --c: #ffc0cb;
+  background: var(--c);
+  box-shadow: 0 0 5px 1px rgb(255 0 4 / 0.9);
+}
+
+/* ---- Keys -------------------------------------------------------------------- */
+
+.mp-keys {
+  --sh-rest: 0 2px 6px 2px rgba(0, 0, 0, 0.5), 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  display: flex;
+  gap: 2px;
+  box-sizing: border-box;
+  height: var(--keys-h);
+  padding: 2px;
+  border: 1px solid #a6a39c;
+  border-radius: var(--keys-radius, 4px);
+}
+
+.mp-key {
+  box-sizing: border-box;
+  min-width: 0;
+  height: 100%;
+  padding: 4px;
+  background: #d9d9d9;
+  border-radius: 2px;
+  box-shadow: var(--sh-rest);
+  cursor: pointer;
+  transition:
+    box-shadow 120ms ease,
+    background 120ms ease;
+}
+/* the Figma's widths, as proportions of the row: previous, play/pause, next */
+.mp-key--step {
+  flex: var(--step-w);
+}
+.mp-key--pp {
+  flex: var(--pp-w);
+}
+.mp-key:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+/* a play is loading: the key stays down and takes no more presses */
+.mp-key--pp[aria-disabled="true"] {
+  cursor: progress;
+}
+/* the outer keys' bottom corners follow the unit's (portrait) */
+.mp-key:first-child {
+  border-bottom-left-radius: var(--key-foot, 2px);
+}
+.mp-key:last-child {
+  border-bottom-right-radius: var(--key-foot, 2px);
+}
+.mp-key:first-child .mp-key__face {
+  border-bottom-left-radius: var(--face-foot, 4px);
+}
+.mp-key:last-child .mp-key__face {
+  border-bottom-right-radius: var(--face-foot, 4px);
+}
+
+.mp-key__face {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding-top: 16px;
+  background: #e8e8e8;
+  border-radius: 4px;
+}
+
+/* States follow the Figma set "Component 1" (303:432):
+   enable -> hover lightens the face (the shadow does not move) -> press darkens the key. */
+.mp-key:hover:not(:disabled):not(:active) .mp-key__face {
+  background: #fefefe;
+}
+
+/* play/pause while playing ("active play"): rests pressed in, a touch lighter than a real press */
+.mp-key--pp[data-playing="true"] {
+  background: linear-gradient(to bottom, #c5c2b9 6%, #696868 95%);
+  box-shadow: none;
+}
+.mp-key--pp[data-playing="true"] .mp-key__face {
+  background:
+    linear-gradient(to bottom, rgba(205, 207, 204, 0.5) 57%, rgba(42, 42, 42, 0.5) 100%),
+    #e8e8e8;
+}
+/* "hover on": still pressed in, face brightens */
+.mp-key--pp[data-playing="true"]:hover:not(:disabled):not(:active) .mp-key__face {
+  background:
+    linear-gradient(to bottom, rgba(205, 207, 204, 0.45) 57%, rgba(42, 42, 42, 0.45) 100%),
+    #fefefe;
+}
+
+/* pressed ("press on" / "press to play" / "press to pause"): the darkest state */
+.mp-key--step:active,
+.mp-key--pp[data-playing]:active {
+  background: linear-gradient(to bottom, #c5c2b9 6%, #535353 95%);
+  box-shadow: none;
+}
+.mp-key--step:active .mp-key__face,
+.mp-key--pp[data-playing]:active .mp-key__face {
+  background:
+    linear-gradient(to bottom, rgba(205, 207, 204, 0.5) 57%, rgba(42, 42, 42, 0.5) 100%),
+    #e8e8e8;
+}
+
+/* Icons: grey when off, pink with a red glow when lit. */
+.mp-ico {
+  display: block;
+  width: 32px;
+  height: 32px;
+  color: #585959;
+  transition:
+    color 120ms ease,
+    filter 120ms ease;
+}
+.mp-pp {
+  position: relative;
+  width: 46px;
+  height: 32px;
+}
+.mp-pp .mp-ico {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.mp-key--step:active .mp-ico,
+.mp-key--pp[data-playing="false"] .mp-ico--pause,
+.mp-key--pp[data-playing="true"] .mp-ico--play,
+.mp-key--pp[data-playing="false"]:active .mp-ico--play,
+.mp-key--pp[data-playing="true"]:active .mp-ico--pause {
+  color: #ffc0cb;
+  filter: drop-shadow(0 0 4px #ff0004);
+}
+/* while pressed, the glyph that was lit goes dark and the other one lights */
+.mp-key--pp[data-playing="false"]:active .mp-ico--pause,
+.mp-key--pp[data-playing="true"]:active .mp-ico--play {
+  color: #585959;
+  filter: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mp-texture,
+  .mp-cassette__inner {
+    animation: none;
+  }
+  .mp-queue__slot,
+  .mp-item,
+  .mp-key,
+  .mp-ico {
+    transition: none;
+  }
+}

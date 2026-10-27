@@ -1,0 +1,497 @@
+/* ---------------------------------------------------------------------------
+   PERFIL — drawn on the shared SectionStage.
+   Figma section `Perfil` (514:291) draws every family: perfil (desktop),
+   desktop_1440 (surface), tablet_h (tablet), tablet_v (ipad), mobile_v
+   (iphone). Sizes below are literal Figma pixels on each family's canvas
+   (the glass's window: Figma's frame minus the window's offset).
+
+   Bottom to top, as Figma stacks it: the ground, the feed, the veil, the
+   cut-out, the text. The first four are decoration and take Figma's
+   positions; the text takes the grid (.stage-safe, globals.css), each group
+   on the column line nearest to where Figma put it:
+   - desktop: the facts on 3, the channels on 6;
+   - surface: the facts on 2, the channels on 6;
+   - tablet: the facts on 2, the channels on 3;
+   - portrait: both on 1, the channels under the facts.
+   No quote any more (design, 2026-10-13: the screen read too busy).
+   --------------------------------------------------------------------------- */
+
+.pf-scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  font-family: var(--font-oxanium), sans-serif;
+  color: var(--ink);
+}
+
+.pf-stage,
+.glass-sheen {
+  /* the glass's ground: Figma's frame fill, #d9d9d9 whitening to the rim */
+  --ground: radial-gradient(1595px 693px at 860px 433px, rgb(197 194 185 / 0) 39%, #fff 76%);
+  /* Figma `photo`'s fills: black rising from the foot, a grey glow from the
+     bottom-right corner. Its box, on the canvas. */
+  --veil: radial-gradient(1907px 1160px at 2017px 1157px, #757575 20%, rgb(219 219 219 / 0) 100%),
+    linear-gradient(156.6deg, rgb(0 0 0 / 0) 23.5%, #000 79.2%);
+  --veil-x: -100px;
+  --veil-y: -108px;
+  --veil-w: 1920px;
+  --veil-h: 1080px;
+
+  /* the feed: each column's top-left corner (before the tilt), its height,
+     the tilt, and the tiles (sharp, then defocusing) */
+  --tilt: 30deg;
+  --c1-x: 419px;
+  --c1-y: -556px;
+  --c1-h: 1480px;
+  --c2-x: 561px;
+  --c2-y: -136px;
+  --c2-h: 1300px;
+  --tile-w: 320px;
+  --tile-h: 480px;
+  --blur-w: 280px;
+  --blur-h: 420px;
+
+  /* the cut-out: left, top and width on the canvas */
+  --photo-x: 1170px;
+  --photo-y: -116px;
+  --photo-w: 650px;
+
+  --fact: 22px;
+  --facts-cols: 3 / -1;
+  --facts-y: 312px;
+  --facts-w: 497px;
+  --chip: #a6a39c;
+  --chip-r: 2px;
+  --link: 22px;
+  --link-lh: 28px;
+  --link-ink: var(--ink);
+  --links-cols: 6 / -1;
+  --links-y: 388px;
+}
+
+[data-bp="surface"] :is(.pf-stage, .glass-sheen) {
+  --ground: radial-gradient(1197px 616px at 648px 400px, rgb(197 194 185 / 0) 39%, #fff 76%);
+  --veil: radial-gradient(1430px 1030px at 1512px 1028px, #757575 20%, rgb(219 219 219 / 0) 100%),
+    linear-gradient(159.9deg, rgb(0 0 0 / 0) 19.5%, #000 80.4%);
+  --veil-x: -72px;
+  --veil-y: -80px;
+  --veil-w: 1440px;
+  --veil-h: 960px;
+
+  --c1-x: 212px;
+  --c1-y: -388px;
+  --c1-h: 1120px;
+  --c2-x: 469px;
+  --c2-y: -263px;
+  --c2-h: 1120px;
+  --tile-w: 240px;
+  --tile-h: 360px;
+  --blur-w: 240px;
+  --blur-h: 360px;
+
+  --photo-x: 810px;
+  --photo-y: -54px;
+
+  --facts-cols: 2 / -1;
+  --facts-y: 293px;
+  --link: 16px;
+  --links-y: 373px;
+}
+
+[data-bp="tablet"] :is(.pf-stage, .glass-sheen) {
+  --ground: radial-gradient(941px 477px at 510px 310px, rgb(197 194 185 / 0) 39%, #fff 76%);
+  --veil: radial-gradient(1125px 799px at 1190px 797px, #757575 20%, rgb(219 219 219 / 0) 100%),
+    linear-gradient(159.6deg, rgb(0 0 0 / 0) 19.8%, #000 80.3%);
+  --veil-x: -57px;
+  --veil-y: -62px;
+  --veil-w: 1133px;
+  --veil-h: 744px;
+
+  --tilt: 26.1deg;
+  --c1-x: 88px;
+  --c1-y: -105px;
+  --c1-h: 967px;
+  --c2-x: 428px;
+  --c2-y: -277px;
+  --c2-h: 967px;
+  --tile-w: 206px;
+  --tile-h: 309px;
+  --blur-w: 206px;
+  --blur-h: 309px;
+
+  --photo-x: 618px;
+  --photo-y: -84px;
+  --photo-w: 458px;
+
+  --facts-cols: 2 / -1;
+  --facts-y: 171px;
+  --facts-w: 394px;
+  --chip-r: 4px;
+  --link: 16px;
+  --links-cols: 3 / -1;
+  --links-y: 322px;
+}
+
+/* Portrait: the veil covers the lower part only, and hangs from the glass's
+   foot, so a taller screen still darkens toward the bottom. */
+[data-bp="ipad"] :is(.pf-stage, .glass-sheen) {
+  --ground: radial-gradient(627px 732px at 331px 503px, rgb(197 194 185 / 0) 39%, #fff 76%);
+  --veil: radial-gradient(718px 402px at 564px 518px, rgb(117 117 117 / 0.5) 20%, rgb(219 219 219 / 0) 89%),
+    linear-gradient(rgb(0 0 0 / 0) 7%, #000 71%);
+  --veil-x: -41px;
+  --veil-w: 744px;
+  --veil-h: 744px;
+  --veil-b: -64px;
+
+  --tilt: 28deg;
+  --c1-x: 476px;
+  --c1-y: -729px;
+  --c1-h: 1710px;
+  --c2-x: 676px;
+  --c2-y: -481px;
+  --c2-h: 1710px;
+  --tile-w: 275px;
+  --tile-h: 412px;
+  --blur-w: 275px;
+  --blur-h: 412px;
+
+  --photo-x: 214px;
+  --photo-y: 253px;
+  --photo-w: 489px;
+
+  --facts-cols: 1 / -1;
+  --facts-y: 217px;
+  --facts-w: 459px;
+  --link: 16px;
+  --link-ink: #e8e8e8; /* over the veil, not the glass */
+  --links-cols: 1 / -1;
+  --links-y: 461px;
+}
+
+[data-bp="iphone"] :is(.pf-stage, .glass-sheen) {
+  --ground: radial-gradient(337px 560px at 177px 401px, rgb(197 194 185 / 0) 39%, #fff 76%);
+  --veil: radial-gradient(420px 282px at 305px 417px, rgb(117 117 117 / 0.5) 20%, rgb(219 219 219 / 0) 89%),
+    linear-gradient(rgb(0 0 0 / 0) 7%, #000 71%);
+  --veil-x: -24px;
+  --veil-w: 402px;
+  --veil-h: 599px;
+  --veil-b: -36px;
+
+  --tilt: 26.2deg;
+  --c1-x: 159px;
+  --c1-y: -263px;
+  --c1-h: 874px;
+  --c2-x: 313px;
+  --c2-y: -230px;
+  /* Figma's 628 ends mid-glass, where its veil hides the cut; here the veil
+     hangs lower and the cut showed, so it runs on past the glass's foot */
+  --c2-h: 1000px;
+  --tile-w: 142px;
+  --tile-h: 213px;
+  --blur-w: 142px;
+  --blur-h: 213px;
+
+  --photo-x: 72px;
+  --photo-y: 327px;
+  --photo-w: 306px;
+
+  --facts-cols: 1 / -1;
+  --facts-y: 111px;
+  --facts-w: auto; /* the chips hug their text here */
+  --link: 16px;
+  --link-lh: 20px;
+  --link-ink: #e8e8e8;
+  --links-cols: 1 / -1;
+  --links-y: 235px;
+}
+
+/* ---- Ground and veil (Viewfinder.tsx, .glass-sheen) ---------------------------
+   On the eyepiece glass, not in this section: drawn on the sheet, they slid
+   in with a hard edge against the next section during a travel. The glass
+   is fixed, so they crossfade with its colour instead (FRAMINGS.perfil.sheen,
+   whose ground is Figma's #d9d9d9). Placed and scaled like SectionStage, so
+   the numbers above stay Figma pixels. The feed now runs over the veil (in
+   Figma it ran under it): the price of no seam. */
+
+.glass-sheen {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--stage-w);
+  height: var(--stage-h);
+  transform: translate(var(--stage-x), var(--stage-y)) scale(var(--stage-scale));
+  transform-origin: 0 0;
+  background: var(--ground);
+}
+.glass-sheen__veil {
+  position: absolute;
+  left: var(--veil-x);
+  top: var(--veil-y);
+  width: var(--veil-w);
+  height: var(--veil-h);
+  background: var(--veil);
+}
+/* Portrait: it hangs from the glass's foot, so a taller screen still
+   darkens toward the bottom. */
+[data-bp="ipad"] .glass-sheen__veil,
+[data-bp="iphone"] .glass-sheen__veil {
+  top: auto;
+  bottom: var(--veil-b);
+}
+
+/* ---- The cut-out ----------------------------------------------------------- */
+
+/* One export per family (PerfilFraming.tsx): only the family's own shows. */
+.pf-photo {
+  display: none;
+  position: absolute;
+  left: var(--photo-x);
+  top: var(--photo-y);
+  width: var(--photo-w);
+  pointer-events: none;
+}
+[data-bp="desktop"] .pf-photo[data-for="desktop"],
+[data-bp="surface"] .pf-photo[data-for="surface"],
+[data-bp="tablet"] .pf-photo[data-for="tablet"],
+[data-bp="ipad"] .pf-photo[data-for="ipad"],
+[data-bp="iphone"] .pf-photo[data-for="iphone"] {
+  display: block;
+}
+.pf-photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ---- The feed (PerfilCarousel.tsx) -----------------------------------------
+   Two columns tilted as drawn (Figma -30°, -26° or -28° by family), turned
+   on their top-left corner, so each drifts up along its own slant.
+
+   Figma sets both columns in Color Burn over the glass. A blend mode cannot
+   do it here: the stage's transform isolates it from the glass, and
+   blending a moving layer live is the cost H15 measured.
+   So the burn is baked into the files, against --screen (#aeaaa0). */
+
+.pf-feed {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.pf-feed__col {
+  position: absolute;
+  overflow: hidden;
+  transform: rotate(var(--tilt));
+  transform-origin: 0 0;
+}
+.pf-feed__col--sharp {
+  left: var(--c1-x);
+  top: var(--c1-y);
+  width: var(--tile-w);
+  height: var(--c1-h);
+}
+.pf-feed__col--blur {
+  left: var(--c2-x);
+  top: var(--c2-y);
+  width: var(--blur-w);
+  height: var(--c2-h);
+}
+
+/* Figma's progressive blur on the second column: none down to a third of
+   it, then up to full at its foot. The mask belongs to the column, so it
+   stays put while the photos travel through it. */
+.pf-feed__haze {
+  position: absolute;
+  inset: 0;
+  -webkit-mask-image: linear-gradient(transparent 32%, #000);
+  mask-image: linear-gradient(transparent 32%, #000);
+}
+
+/* Film advance (design, 2026-10-13): instead of a steady drift, each column
+   stands still on a photo, then pulls the next one in with a short jerk, like
+   a camera winding its film, so every photo is there long enough to look at.
+   3s a photo: 2.4 still, 0.6 moving (sharp start, soft stop).
+
+   Each track lists its photos twice and travels one list, a photo and a gap
+   (--pitch) at a time: after the eleventh, the second list stands exactly
+   where the first began, so the loop never jumps. */
+.pf-feed__track {
+  --pitch: calc(var(--tile-h) + 20px);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: pf-advance 33s infinite;
+  will-change: transform;
+}
+.pf-feed__col--blur .pf-feed__track {
+  --pitch: calc(var(--blur-h) + 20px);
+  /* half a step behind: the two columns take turns, never wind together.
+     Its sharp and defocused copies share this, so they stay in register. */
+  animation-delay: -1.5s;
+}
+.pf-feed[data-playing="false"] .pf-feed__track {
+  animation-play-state: paused;
+}
+/* Eleven steps (the photos in a list), each 80% still and 20% moving; the
+   ease of a move is set on the keyframe it starts from. */
+@keyframes pf-advance {
+  0%,
+  7.273% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0.7, 0, 0.2, 1);
+  }
+  9.091%,
+  16.364% {
+    transform: translateY(calc(-1 * var(--pitch)));
+    animation-timing-function: cubic-bezier(0.7, 0, 0.2, 1);
+  }
+  18.182%,
+  25.455% {
+    transform: translateY(calc(-2 * var(--pitch)));
+    animation-timing-function: cubic-bezier(0.7, 0, 0.2, 1);
+  }
+  27.273%,
+  34.545% {
+    transform: translateY(calc(-3 * var(--pitch)));
+    animation-timing-function: cubic-bezier(0.7, 0, 0.2, 1);
+  }
+  36.364%,
+  43.636% {
+    transform: translateY(calc(-4 * var(--pitch)));
+    animation-timing-function: cubic-bezier(0.7, 0, 0.2, 1);
+  }
+  45.455%,
+  52.727% {
+    transform: translateY(calc(-5 * var(--pitch)));
+    animation-timing-function: cubic-bezier(0.7, 0, 0.2, 1);
+  }
+  54.545%,
+  61.818% {
+    transform: translateY(calc(-6 * var(--pitch)));
+    animation-timing-function: cubic-bezier(0.7, 0, 0.2, 1);
+  }
+  63.636%,
+  70.909% {
+    transform: translateY(calc(-7 * var(--pitch)));
+    animation-timing-function: cubic-bezier(0.7, 0, 0.2, 1);
+  }
+  72.727%,
+  80% {
+    transform: translateY(calc(-8 * var(--pitch)));
+    animation-timing-function: cubic-bezier(0.7, 0, 0.2, 1);
+  }
+  81.818%,
+  89.091% {
+    transform: translateY(calc(-9 * var(--pitch)));
+    animation-timing-function: cubic-bezier(0.7, 0, 0.2, 1);
+  }
+  90.909%,
+  98.182% {
+    transform: translateY(calc(-10 * var(--pitch)));
+    animation-timing-function: cubic-bezier(0.7, 0, 0.2, 1);
+  }
+  100% {
+    transform: translateY(calc(-11 * var(--pitch)));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pf-feed__track {
+    animation: none;
+  }
+}
+
+.pf-feed__tile {
+  position: relative;
+  flex: none;
+  width: var(--tile-w);
+  height: var(--tile-h);
+  overflow: hidden;
+}
+.pf-feed__col--blur .pf-feed__tile {
+  width: var(--blur-w);
+  height: var(--blur-h);
+}
+.pf-feed__tile img {
+  object-fit: cover;
+}
+.pf-feed__haze img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ---- The text ------------------------------------------------------------ */
+
+/* Both groups sit in the one row, which fills the safe zone, each placed by
+   its own Figma offset, so the columns come from the grid and nothing pushes
+   anything else. */
+.pf-grid {
+  grid-template-rows: 1fr;
+  align-items: start;
+}
+
+.pf-group {
+  position: relative;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin: 0;
+}
+.pf-group--facts {
+  grid-column: var(--facts-cols);
+  justify-self: start;
+  width: min(var(--facts-w), 100%);
+  margin-top: var(--facts-y);
+  gap: 24px;
+  font-size: var(--fact);
+  line-height: 28px;
+}
+.pf-group--links {
+  grid-column: var(--links-cols);
+  justify-self: start;
+  margin-top: var(--links-y);
+  gap: 12px;
+  font-size: var(--link);
+  line-height: var(--link-lh);
+  color: var(--link-ink);
+}
+
+/* Label : Value, 8px apart on both sides of the colon. The facts sit on a
+   bar of the glass's grey, the group's width (Figma's fixed rows); the
+   channels on nothing. */
+.pf-row {
+  display: flex;
+  gap: 8px;
+}
+.pf-group--facts .pf-row {
+  align-self: stretch;
+  padding: 0 8px;
+  border-radius: var(--chip-r);
+  background: var(--chip);
+}
+[data-bp="iphone"] .pf-group--facts .pf-row {
+  align-self: flex-start;
+}
+.pf-row dt {
+  font-weight: 400;
+  text-transform: uppercase;
+}
+.pf-row dt::after {
+  content: ":";
+  margin-left: 8px;
+}
+.pf-row dd {
+  margin: 0;
+  font-weight: 600;
+}
+.pf-row a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  text-decoration-color: transparent;
+  transition: text-decoration-color 200ms ease;
+}
+.pf-row a:hover {
+  text-decoration-color: currentColor;
+}

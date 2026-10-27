@@ -1,0 +1,206 @@
+/* ---------------------------------------------------------------------------
+   CONTACTO — drawn on the shared SectionStage.
+   Figma `Contact` (536:541): every size below is a literal Figma pixel on the
+   1720x864 canvas. The rows sit above the menu, which crosses the middle of
+   the glass here (463 on the stage, globals.css). Contacto's glass is taller
+   than the stage, but all of its content falls inside it: no canvas of its own.
+   --------------------------------------------------------------------------- */
+
+.ct-scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  font-family: var(--font-oxanium), sans-serif;
+  color: #040306;
+}
+
+/* Desktop: the box centred on the glass, as in Figma, which on 8 columns is
+   3-6. It is 200 tall (one address, two links), and ends 48 clear above
+   the menu at 463: 463 - 48 - 200 - 80. */
+.ct-stage {
+  --rows-cols: 3 / span 4;
+  --rows-y: 135px;
+  --row: 22px;
+  --row-gap: 24px;
+  --row-pad: 24px;
+}
+[data-bp="surface"] .ct-stage {
+  --rows-y: 174px; /* the same 48 clear: the box is 161 tall here */
+  --row: 18px;
+  --row-gap: 18px;
+  --row-pad: 18px;
+}
+[data-bp="tablet"] .ct-stage {
+  --rows-cols: 2 / span 4;
+  --rows-y: 120px;
+  --row: 16px;
+  --row-gap: 14px;
+  --row-pad: 14px;
+}
+[data-bp="ipad"] .ct-stage,
+[data-bp="iphone"] .ct-stage {
+  --rows-cols: 1 / -1;
+}
+[data-bp="ipad"] .ct-stage {
+  --rows-y: 260px;
+  --row: 20px;
+}
+/* Phones: centred in the glass rather than at a set height. A short phone
+   (360x675) has a short glass, and from a fixed top the last group ran into
+   the ring. The glass is centred on the stage, not on the safe zone (which
+   keeps 152 for the menu on top), so the box spans the whole stage height. */
+[data-bp="iphone"] .ct-grid {
+  top: 0;
+  bottom: 0;
+  align-content: center;
+}
+[data-bp="iphone"] .ct-stage {
+  --rows-y: 0px;
+  --row: 15px;
+  --row-gap: 16px;
+  --row-pad: 8px;
+}
+
+.ct-grid {
+  align-content: start;
+}
+
+.ct-rows {
+  grid-column: var(--rows-cols);
+  margin: var(--rows-y) 0 0;
+  padding: var(--row-pad);
+  display: flex;
+  flex-direction: column;
+  gap: var(--row-gap);
+  font-size: var(--row);
+  line-height: 1.27; /* 28 on 22 */
+}
+
+/* A label over its items, 8 apart (Figma `Frame 52`); the links, the same. */
+.ct-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ct-group dt {
+  text-transform: uppercase;
+}
+.ct-group dd {
+  margin: 0;
+}
+
+/* The links answer the address from the other side of the box: left, then
+   right, a diagonal on the round glass instead of one flush column. */
+.ct-links {
+  align-items: flex-end;
+  text-align: right;
+}
+
+/* The documents (press, rider) stay plain links: the arrow says they open
+   elsewhere, and the underline comes in on hover. */
+.ct-link {
+  font-weight: 600;
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  text-decoration-color: transparent;
+  transition: text-decoration-color 200ms ease;
+}
+.ct-link:hover,
+.ct-link:focus-visible {
+  text-decoration-color: currentColor;
+}
+
+/* item_contact (Figma 550:419), only for the addresses: the value on the left, its action on the
+   right (16 on 22). Default shows only the value. Hover lays the #d9d9d9 band
+   and the action in grey; the click turns the action red and lifts the band.
+   On touch there is no hover, so the action always shows, and the press
+   (Figma `pressed`) is the band with the action in red. */
+.ct-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 150ms ease;
+}
+.ct-item--copy {
+  user-select: text;
+}
+.ct-value {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.ct-action {
+  flex: none;
+  font-size: 0.727em;
+  font-weight: 500;
+  color: #4b4b4b;
+  opacity: 0;
+  transition:
+    opacity 150ms ease,
+    color 150ms ease;
+}
+
+.ct-item:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+.ct-item:focus-visible .ct-action {
+  opacity: 1;
+}
+
+@media (hover: hover) {
+  .ct-item:hover {
+    background: #d9d9d9;
+  }
+  .ct-item:hover .ct-action {
+    opacity: 1;
+  }
+  .ct-item:active,
+  .ct-item[data-done] {
+    background: none;
+  }
+  .ct-item:active .ct-action {
+    color: var(--menu-active);
+  }
+}
+@media (hover: none) {
+  /* only as wide as the address, so "Copiar" sits beside it: pushed to the
+     right edge it stood right above the links and read as one of them */
+  .ct-item {
+    display: inline-flex;
+    width: auto;
+    justify-content: flex-start;
+    gap: 12px;
+  }
+  .ct-action {
+    opacity: 1;
+  }
+  .ct-item:active {
+    background: #d9d9d9;
+  }
+  .ct-item:active .ct-action {
+    color: var(--menu-active);
+  }
+}
+
+/* Just copied: the action says so, in red, for a moment (CopyEmail). */
+.ct-item[data-done] .ct-action {
+  opacity: 1;
+  color: var(--menu-active);
+}
