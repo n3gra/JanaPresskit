@@ -1,5 +1,5 @@
 import "./contacto/contacto.css";
-import { PRESS_KIT, TECH_RIDER } from "@/lib/channels";
+import { BIO, PRESS_KIT, TECH_RIDER } from "@/lib/channels";
 import SectionStage from "./SectionStage";
 import CopyEmail from "./contacto/CopyEmail";
 
@@ -19,8 +19,8 @@ function DocLink({ href, children }: { href: string; children: string }) {
  * own round glass, the ringed lens and the red ground belong to the eyepiece
  * (FRAMINGS in lib/viewfinder.ts); the menu crosses the middle of the glass
  * here (SiteMenu). The booking addresses under their label, each copied by a
- * tap, then the press folder and the tech rider (next to booking, where a
- * booker needs it) as links.
+ * tap, then the press folder, the long bio and the tech rider (next to
+ * booking, where a booker needs it) as links.
  */
 export default function BookingFraming({ emails }: { emails: string[] }) {
   return (
@@ -38,6 +38,7 @@ export default function BookingFraming({ emails }: { emails: string[] }) {
               {/* The documents name themselves: a label over each only repeated it. */}
               <ul className="ct-group ct-links">
                 <DocLink href={PRESS_KIT}>Material de prensa</DocLink>
+                <DocLink href={BIO}>Bio completa</DocLink>
                 <DocLink href={TECH_RIDER}>Tech rider</DocLink>
               </ul>
             </div>

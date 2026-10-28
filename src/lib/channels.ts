@@ -29,3 +29,7 @@ export const PRESS_KIT =
  * replaced the Tech-Rider section (2026-10-13).
  */
 export const TECH_RIDER = "https://drive.google.com/file/d/1LYDcFIzXB7VtsHmqSoBOcBsTd1h8Kyia/view";
+
+/** Her long bio, which Perfil's short one leaves out (asked 2026-10-28). */
+export const BIO =
+  "https://drive.google.com/drive/folders/18fOgSj13npbFk3lfmlV1RmGo_1RxxAuN?usp=drive_link";
