@@ -44,7 +44,7 @@
   position: absolute;
   inset: 0;
   overflow: hidden;
-  color: #fff;
+  color: var(--white);
   font-family: var(--font-oxanium), sans-serif;
   transition: --disc 700ms ease;
 }
@@ -297,7 +297,7 @@
   top: -0.351%;
   width: 100.84%;
   height: 100.84%;
-  border-color: #f20000;
+  border-color: var(--role-accent);
 }
 .mp-disc__ring--outer {
   left: -3.649%;
@@ -399,7 +399,7 @@
   gap: 19px;
   width: 100%;
   height: 100%;
-  color: #fff;
+  color: var(--white);
   text-align: left;
   cursor: pointer;
   transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -421,7 +421,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  border: 2px solid #f20000;
+  border: 2px solid var(--role-accent);
   border-radius: inherit;
 }
 
@@ -444,13 +444,13 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #d9d9d9;
+  color: var(--mist);
   font-size: var(--item-meta);
   line-height: 1.28;
   white-space: nowrap;
 }
 .mp-item__source {
-  color: #fff;
+  color: var(--white);
 }
 .mp-item__dur {
   margin-left: auto;
@@ -465,8 +465,8 @@
   box-sizing: border-box;
   height: var(--deck-h);
   padding: 16px 14px;
-  background: #040306;
-  border: 2px solid #a6a39c;
+  background: var(--pending-m1);
+  border: 2px solid var(--pending-m3);
   border-radius: 8px;
 }
 .mp-cassette__inner {
@@ -482,7 +482,7 @@
   padding-right: 25px;
 }
 .mp-cassette__dur {
-  color: #d9d9d9;
+  color: var(--mist);
   font-size: 16px;
   line-height: 1.25;
 }
@@ -495,7 +495,7 @@
 }
 .mp-cassette__title {
   overflow: hidden;
-  color: #c5c2b9;
+  color: var(--screen-light);
   font-size: 20px;
   font-weight: 500;
   line-height: 1.15;
@@ -510,7 +510,7 @@
   display: flex;
   gap: 19px;
   margin: 0;
-  color: #c5c2b9;
+  color: var(--screen-light);
   font-size: 16px;
   white-space: nowrap;
   writing-mode: vertical-rl;
@@ -526,10 +526,10 @@
   box-sizing: border-box;
   height: var(--deck-h);
   padding: var(--ctl-pad);
-  background: #d9d9d9;
+  background: var(--mist);
   border-radius: var(--ctl-radius, 8px);
   box-shadow:
-    0 0 0 2px #a6a39c,
+    0 0 0 2px var(--pending-m3),
     0 4px 4px 0 rgba(0, 0, 0, 0.3),
     0 8px 12px 6px rgba(0, 0, 0, 0.15);
 }
@@ -548,9 +548,9 @@
   min-width: 0;
   height: 100%;
   padding: var(--lcd-pad);
-  color: #d9d9d9;
-  background: #040306;
-  border: 2px solid #a6a39c;
+  color: var(--mist);
+  background: var(--pending-m1);
+  border: 2px solid var(--pending-m3);
   border-radius: 4px;
   text-shadow: 0 0 4px rgba(217, 217, 217, 0.5);
   overflow: hidden;
@@ -570,7 +570,7 @@
     text-shadow 200ms ease;
 }
 .mp-scene[data-playing="true"] .mp-lcd__time {
-  color: var(--menu-active);
+  color: var(--role-accent);
   text-shadow: 0 0 6px rgb(255 0 4 / 0.6);
 }
 /* Loading (useSoundCloud's `pending`): the clock reads CARGANDO and three dots
@@ -618,7 +618,7 @@
   justify-content: space-between;
 }
 .mp-lcd__total {
-  color: #a6a39c;
+  color: var(--pending-m3);
   font-size: 13px;
   font-variant-numeric: tabular-nums;
 }
@@ -661,7 +661,7 @@
   fill: #3a393d;
 }
 .mp-seek__bars--lit {
-  fill: #d9d9d9;
+  fill: var(--mist);
   filter: drop-shadow(0 0 3px rgba(217, 217, 217, 0.55));
   clip-path: inset(0 calc((1 - var(--f)) * 100%) 0 0);
   transition: clip-path 240ms linear;
@@ -685,7 +685,7 @@
   left: 0;
   width: 2px;
   margin-left: -1px;
-  background: #fff;
+  background: var(--white);
   box-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
 }
 /* a small notch on top, so the playhead reads as a marker and not as a bar */
@@ -696,7 +696,7 @@
   left: 0;
   margin-left: -3px;
   border: 3px solid transparent;
-  border-top-color: #fff;
+  border-top-color: var(--white);
   border-bottom-width: 0;
 }
 /* What a finger takes: 44 px around the playhead, invisible, so the thin line
@@ -773,7 +773,7 @@
   height: 100%;
   background: #1c1b1f;
   border-radius: 99px;
-  box-shadow: 0 0 0 2px #a6a39c;
+  box-shadow: 0 0 0 2px var(--pending-m3);
 }
 .mp-vol__thumb {
   position: absolute;
@@ -782,7 +782,7 @@
   box-sizing: border-box;
   width: 24px;
   height: 6px;
-  background: #d9d9d9;
+  background: var(--mist);
   border: 1px solid #585959;
   border-radius: 99px;
 }
@@ -804,7 +804,7 @@
   width: 12px;
   height: 100%;
   padding: 2px;
-  background: #040306;
+  background: var(--pending-m1);
   border-radius: 2px;
 }
 .mp-vu__seg {
@@ -840,7 +840,7 @@
   box-sizing: border-box;
   height: var(--keys-h);
   padding: 2px;
-  border: 1px solid #a6a39c;
+  border: 1px solid var(--pending-m3);
   border-radius: var(--keys-radius, 4px);
 }
 
@@ -849,7 +849,7 @@
   min-width: 0;
   height: 100%;
   padding: 4px;
-  background: #d9d9d9;
+  background: var(--mist);
   border-radius: 2px;
   box-shadow: var(--sh-rest);
   cursor: pointer;
@@ -892,7 +892,7 @@
   width: 100%;
   height: 100%;
   padding-top: 16px;
-  background: #e8e8e8;
+  background: var(--pending-m4);
   border-radius: 4px;
 }
 
@@ -904,13 +904,13 @@
 
 /* play/pause while playing ("active play"): rests pressed in, a touch lighter than a real press */
 .mp-key--pp[data-playing="true"] {
-  background: linear-gradient(to bottom, #c5c2b9 6%, #696868 95%);
+  background: linear-gradient(to bottom, var(--screen-light) 6%, #696868 95%);
   box-shadow: none;
 }
 .mp-key--pp[data-playing="true"] .mp-key__face {
   background:
     linear-gradient(to bottom, rgba(205, 207, 204, 0.5) 57%, rgba(42, 42, 42, 0.5) 100%),
-    #e8e8e8;
+    var(--pending-m4);
 }
 /* "hover on": still pressed in, face brightens */
 .mp-key--pp[data-playing="true"]:hover:not(:disabled):not(:active) .mp-key__face {
@@ -922,14 +922,14 @@
 /* pressed ("press on" / "press to play" / "press to pause"): the darkest state */
 .mp-key--step:active,
 .mp-key--pp[data-playing]:active {
-  background: linear-gradient(to bottom, #c5c2b9 6%, #535353 95%);
+  background: linear-gradient(to bottom, var(--screen-light) 6%, #535353 95%);
   box-shadow: none;
 }
 .mp-key--step:active .mp-key__face,
 .mp-key--pp[data-playing]:active .mp-key__face {
   background:
     linear-gradient(to bottom, rgba(205, 207, 204, 0.5) 57%, rgba(42, 42, 42, 0.5) 100%),
-    #e8e8e8;
+    var(--pending-m4);
 }
 
 /* Icons: grey when off, pink with a red glow when lit. */

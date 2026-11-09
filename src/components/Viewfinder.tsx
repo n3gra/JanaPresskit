@@ -350,7 +350,7 @@ export default function Viewfinder({ children }: Props) {
       ref={stageRef}
       data-bp={bp}
       suppressHydrationWarning
-      className="fixed inset-0 overflow-hidden bg-black"
+      className="fixed inset-0 overflow-hidden vf-ground"
     >
       {/* the focusing screen ------------------------------------------------
           Glass and content start fully clipped (`inset(50%)`): the real outline
@@ -415,7 +415,7 @@ export default function Viewfinder({ children }: Props) {
             <use href="#eye-outline" />
           </clipPath>
           <linearGradient id="eye-sheen" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#fff" stopOpacity="0.5" />
+            <stop offset="0" stopColor="#fff" stopOpacity="0.5" /> {/* mirror of --white */}
             <stop offset="0.35" stopColor="#fff" stopOpacity="0" />
           </linearGradient>
         </defs>

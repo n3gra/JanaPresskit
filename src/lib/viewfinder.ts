@@ -66,12 +66,12 @@ export type Framing = {
 export const FRAMINGS: Framing[] = [
   // Ink under the footage: bare, the light glass showed for half a second as
   // the footage left and before Archivo came, a pale flash (2026-10-13).
-  { id: "hero", label: "Inicio", ground: [13, 13, 13, 1] },
+  { id: "hero", label: "Inicio", ground: [13, 13, 13, 1] }, // mirror of --ink
   // "Archivo" everywhere: the full "Archivo de música" ran too long in the
   // portrait menu and the dialog (Yamina, 2026-09-28).
-  { id: "musica", label: "Archivo", ground: [242, 0, 0, 1] },
+  { id: "musica", label: "Archivo", ground: [242, 0, 0, 1] }, // mirror of --signal
   // Figma's frame fill, #d9d9d9; the sheen goes over it.
-  { id: "perfil", label: "Perfil", ground: [217, 217, 217, 1], sheen: true },
+  { id: "perfil", label: "Perfil", ground: [217, 217, 217, 1], sheen: true }, // mirror of --mist
   // Ink: what shows past the lens's ring (globals.css, .glass-lens).
   { id: "booking", label: "Contacto", ground: [13, 13, 13, 1], lens: true },
 ];

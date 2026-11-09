@@ -11,7 +11,7 @@
   inset: 0;
   overflow: hidden;
   font-family: var(--font-oxanium), sans-serif;
-  color: #040306;
+  color: var(--pending-m1);
 }
 
 /* Desktop: the box centred on the glass, as in Figma, which on 8 columns is
@@ -116,7 +116,7 @@
 }
 
 /* item_contact (Figma 550:419), only for the addresses: the value on the left, its action on the
-   right (16 on 22). Default shows only the value. Hover lays the #d9d9d9 band
+   right (16 on 22). Default shows only the value. Hover lays the var(--mist) band
    and the action in grey; the click turns the action red and lifts the band.
    On touch there is no hover, so the action always shows, and the press
    (Figma `pressed`) is the band with the action in red. */
@@ -166,7 +166,7 @@
 
 @media (hover: hover) {
   .ct-item:hover {
-    background: #d9d9d9;
+    background: var(--mist);
   }
   .ct-item:hover .ct-action {
     opacity: 1;
@@ -176,7 +176,7 @@
     background: none;
   }
   .ct-item:active .ct-action {
-    color: var(--menu-active);
+    color: var(--role-accent);
   }
 }
 @media (hover: none) {
@@ -192,15 +192,15 @@
     opacity: 1;
   }
   .ct-item:active {
-    background: #d9d9d9;
+    background: var(--mist);
   }
   .ct-item:active .ct-action {
-    color: var(--menu-active);
+    color: var(--role-accent);
   }
 }
 
 /* Just copied: the action says so, in red, for a moment (CopyEmail). */
 .ct-item[data-done] .ct-action {
   opacity: 1;
-  color: var(--menu-active);
+  color: var(--role-accent);
 }

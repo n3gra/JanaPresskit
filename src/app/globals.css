@@ -7,34 +7,39 @@
    --------------------------------------------------------------------------- */
 
 :root {
-  --black: #070706;
-  --black-lift: #12110f;
+  /* ---- Color: palette (9) -------------------------------------------------
+     Names and values are the Figma `Color` collection (handoff/figma/name-map.json,
+     ADR 0003/0005). Pure CSS custom properties; deliberately NOT exposed through
+     Tailwind's @theme. */
+  --black: #070706; /* outside the eyepiece */
+  --ink: #0d0d0d;
+  --screen: #aeaaa0; /* the focusing screen's field */
+  --screen-light: #c5c2b9;
+  --mist: #d9d9d9;
+  --paper: #efece4;
+  --white: #ffffff;
+  --signal: #f20000; /* the accent */
+  --signal-deep: #cf2417; /* focus and selection (before: --signal) */
 
-  --screen: #aeaaa0;
-  --screen-hi: #c9c5ba;
-  --screen-lo: #8b877f;
-  --screen-deep: #6b675f;
-  /* Figma variable sf_300: the hero's ground, under the video. */
-  --sf-300: #a6a39c;
+  /* ---- Color: roles (6), aliases of the palette (ADR 0004) ---------------- */
+  --role-ground: var(--black);
+  --role-surface: var(--screen);
+  --role-text: var(--ink);
+  --role-text-inverse: var(--paper);
+  --role-accent: var(--signal);
+  --role-focus: var(--signal-deep);
 
-  /* The menu (Menu_Item in Figma): light type on an ink chip, red when active. */
-  --menu-text: #e8e8e8;
-  --menu-active: #f20000;
+  /* ---- Pending PR 2 merges (report 0002, GATE 3: M1-M4 approved) -----------
+     PR 1 is faithful (0 px): these four values still render as they do today.
+     PR 2 points each one at its palette color and deletes the line.
+     Never reference them from anything that is not a pending-merge use. */
+  --pending-m1: #040306; /* -> black  (player panel, Contacto ink) */
+  --pending-m2: #000000; /* -> black  (live channel, rim, shadow/scanline base) */
+  --pending-m3: #a6a39c; /* -> screen (hero ground, player border, Perfil chip; was --sf-300) */
+  --pending-m4: #e8e8e8; /* -> paper  (menu/HUD/Perfil light text; was --menu-text) */
+
   /* One timing for every click (Figma had 1.02s on one item, 0.3s on the rest). */
   --ease-click: cubic-bezier(0.22, 1, 0.36, 1);
-
-  /* Measured against --screen (#aeaaa0): 8.2:1, 6.6:1, 4.7:1.
-     Nothing below 4.5:1 carries text on the focusing screen. */
-  --ink: #0d0d0d;
-  --ink-soft: #24221e;
-  --ink-faint: #403d35;
-
-  --paper: #efece4;
-  --signal: #cf2417;
-  --signal-hot: #ff512f;
-
-  --rule: color-mix(in srgb, var(--ink) 28%, transparent);
-  --rule-strong: color-mix(in srgb, var(--ink) 52%, transparent);
 
   /* written by the Viewfinder each frame */
   --eye-w: 80vw;
@@ -50,22 +55,17 @@
   --stage-max-h: 1200px;
 }
 
-@theme inline {
-  --color-black: var(--black);
-  --color-screen: var(--screen);
-  --color-screen-hi: var(--screen-hi);
-  --color-screen-lo: var(--screen-lo);
-  --color-screen-deep: var(--screen-deep);
-  --color-sf-300: var(--sf-300);
-  --color-ink: var(--ink);
-  --color-ink-soft: var(--ink-soft);
-  --color-ink-faint: var(--ink-faint);
-  --color-paper: var(--paper);
-  --color-signal: var(--signal);
+/* Ground of the Viewfinder's root (was Tailwind's bg-black) and of the hero's
+   footage layer (was bg-sf-300, the value now pending M3). */
+.vf-ground {
+  background-color: var(--role-ground);
+}
+.hero-footage-ground {
+  background-color: var(--pending-m3);
 }
 
 html {
-  background: var(--black);
+  background: var(--role-ground);
   scrollbar-width: none;
 }
 html::-webkit-scrollbar {
@@ -73,27 +73,21 @@ html::-webkit-scrollbar {
 }
 
 body {
-  background: var(--black);
-  color: var(--ink);
+  background: var(--role-ground);
+  color: var(--role-text);
   font-family: var(--font-oxanium), sans-serif;
   -webkit-font-smoothing: antialiased;
   overscroll-behavior: none;
 }
 
 ::selection {
-  background: var(--signal);
-  color: var(--paper);
+  background: var(--role-focus);
+  color: var(--role-text-inverse);
 }
 
 :focus-visible {
-  outline: 2px solid var(--signal);
+  outline: 2px solid var(--role-focus);
   outline-offset: 3px;
-}
-
-
-.u-meta-sm {
-  font-size: 0.625rem;
-  letter-spacing: 0.2em;
 }
 
 /* ---- Jana's real wordmark, as a mask so it takes any ink ------------------ */
@@ -124,22 +118,9 @@ body {
 /* The scanned focusing screen. Offset so the metering circle baked into the
    scan sits off to one side instead of behind the reading column. */
 .mat-screen {
-  background-color: var(--screen);
+  background-color: var(--role-surface);
   /* The scanned texture (/textures/viewfinder-ground.webp, cover, centred)
      is off until the final design pass: no textures before then. */
-}
-
-/* Incandescent red — a blurred bloom, the way it reads on the moodboard. */
-.mat-flare {
-  background: radial-gradient(
-    ellipse 60% 45% at 50% 50%,
-    var(--signal-hot) 0%,
-    var(--signal) 36%,
-    color-mix(in srgb, var(--signal) 40%, transparent) 58%,
-    transparent 76%
-  );
-  filter: blur(22px) saturate(1.3);
-  mix-blend-mode: multiply;
 }
 
 /* Photographic plates sit on the screen, graded into it. */
@@ -304,8 +285,8 @@ body {
   transform: var(--lens-m, scale(0));
   background: radial-gradient(
     circle 100px at 50% 50%,
-    #c5c2b9 calc((1 - var(--lens-soft, 0.05)) * 100%),
-    var(--menu-active) 100%,
+    var(--screen-light) calc((1 - var(--lens-soft, 0.05)) * 100%),
+    var(--role-accent) 100%,
     var(--ink) calc((1 + var(--lens-soft, 0.05)) * 100%)
   );
 }
@@ -446,7 +427,7 @@ body {
   pointer-events: none;
 }
 .glass-edge__shade {
-  stroke: #000;
+  stroke: var(--pending-m2);
   stroke-opacity: 0.035;
   stroke-width: calc(var(--short, 600px) * 0.3 * var(--k));
 }
@@ -587,7 +568,7 @@ body {
 }
 .hud a:hover,
 .hud a:focus-visible {
-  color: #e8e8e8;
+  color: var(--pending-m4);
   text-decoration-color: currentColor;
 }
 .hud a:focus-visible {
@@ -616,7 +597,7 @@ body {
 }
 .hud__play:hover,
 .hud__play:focus-visible {
-  color: #e8e8e8;
+  color: var(--pending-m4);
 }
 .hud__play:focus-visible {
   outline: 1px solid currentColor;
@@ -636,7 +617,7 @@ body {
   width: 0.6em;
   height: 0.6em;
   border-radius: 50%;
-  background: var(--menu-active);
+  background: var(--role-accent);
   animation: hud-rec 2s ease-in-out infinite;
 }
 @keyframes hud-rec {
@@ -913,7 +894,7 @@ body {
   font-size: 24px;
   line-height: 1.1;
   letter-spacing: 0.02em;
-  color: var(--menu-text);
+  color: var(--pending-m4);
   transition:
     color 450ms var(--ease-click),
     font-size 450ms var(--ease-click),
@@ -950,7 +931,7 @@ a.menu-item[data-state="enable"]:active::before {
   font-size: 63px;
   line-height: 1;
   letter-spacing: -0.02em;
-  color: var(--menu-active);
+  color: var(--role-accent);
 }
 .menu-item[data-state="active"]::before {
   border-radius: 4px;
@@ -993,7 +974,7 @@ a.menu-item[data-state="enable"]:active::before {
   height: 48px;
   border-radius: 4px;
   background: var(--ink);
-  color: var(--menu-text);
+  color: var(--pending-m4);
   cursor: pointer;
 }
 
@@ -1011,7 +992,7 @@ a.menu-item[data-state="enable"]:active::before {
   border: 0;
   overflow: hidden;
   background: transparent;
-  color: var(--menu-text);
+  color: var(--pending-m4);
 }
 .menu-dialog::backdrop {
   background: transparent;
@@ -1023,7 +1004,7 @@ a.menu-item[data-state="enable"]:active::before {
    head and foot; and the tube's glass (.crt) over it, since the dialog lives
    in the top layer, above the page's own. */
 .menu-dialog {
-  background: radial-gradient(ellipse at 50% 45%, #141312 0%, #070706 75%);
+  background: radial-gradient(ellipse at 50% 45%, #141312 0%, var(--black) 75%);
 }
 .menu-dialog__inner {
   --pad-x: calc(var(--eye-x, 24px) + var(--margin, 16px));
@@ -1049,7 +1030,7 @@ a.menu-item[data-state="enable"]:active::before {
 .menu-dialog__mark {
   align-self: flex-start;
   margin-left: calc(1.4 * 18px + 18px);
-  color: var(--menu-text);
+  color: var(--pending-m4);
   transition: color 200ms ease;
 }
 .menu-dialog__mark .mark {
@@ -1059,10 +1040,10 @@ a.menu-item[data-state="enable"]:active::before {
 }
 .menu-dialog__mark:hover,
 .menu-dialog__mark:focus-visible {
-  color: var(--menu-active);
+  color: var(--role-accent);
 }
 .menu-dialog__mark:focus-visible {
-  outline: 2px solid var(--menu-text);
+  outline: 2px solid var(--pending-m4);
   outline-offset: 4px;
 }
 [data-bp="ipad"] .menu-dialog__mark .mark {
@@ -1091,7 +1072,7 @@ a.menu-item[data-state="enable"]:active::before {
   padding: 6px 0;
   font-family: var(--font-oswald), sans-serif;
   text-transform: uppercase;
-  color: var(--menu-text);
+  color: var(--pending-m4);
   text-decoration: none;
   -webkit-tap-highlight-color: transparent;
 }
@@ -1100,7 +1081,7 @@ a.menu-item[data-state="enable"]:active::before {
   flex: none;
   width: 1.4em;
   font-size: 18px;
-  color: var(--menu-active);
+  color: var(--role-accent);
   visibility: hidden;
 }
 .channel[data-on-air] .channel__cursor {
@@ -1135,17 +1116,17 @@ a.menu-item[data-state="enable"]:active::before {
 }
 /* on air: red on its chip, behind the cursor */
 .channel[data-on-air] .channel__name {
-  color: var(--menu-active);
+  color: var(--role-accent);
 }
 .channel[data-on-air] .channel__name::before {
   inset: 0;
-  background: #000;
+  background: var(--pending-m2);
 }
 .channel:focus-visible {
   outline: none;
 }
 .channel:focus-visible .channel__name {
-  outline: 2px solid var(--menu-text);
+  outline: 2px solid var(--pending-m4);
   outline-offset: 2px;
 }
 .menu-dialog__foot {

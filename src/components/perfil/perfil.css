@@ -21,17 +21,17 @@
   inset: 0;
   overflow: hidden;
   font-family: var(--font-oxanium), sans-serif;
-  color: var(--ink);
+  color: var(--role-text);
 }
 
 .pf-stage,
 .glass-sheen {
   /* the glass's ground: Figma's frame fill, #d9d9d9 whitening to the rim */
-  --ground: radial-gradient(1595px 693px at 860px 433px, rgb(197 194 185 / 0) 39%, #fff 76%);
+  --ground: radial-gradient(1595px 693px at 860px 433px, rgb(197 194 185 / 0) 39%, var(--white) 76%);
   /* Figma `photo`'s fills: black rising from the foot, a grey glow from the
      bottom-right corner. Its box, on the canvas. */
   --veil: radial-gradient(1907px 1160px at 2017px 1157px, #757575 20%, rgb(219 219 219 / 0) 100%),
-    linear-gradient(156.6deg, rgb(0 0 0 / 0) 23.5%, #000 79.2%);
+    linear-gradient(156.6deg, rgb(0 0 0 / 0) 23.5%, var(--pending-m2) 79.2%);
   --veil-x: -100px;
   --veil-y: -108px;
   --veil-w: 1920px;
@@ -60,19 +60,19 @@
   --facts-cols: 3 / -1;
   --facts-y: 312px;
   --facts-w: 497px;
-  --chip: #a6a39c;
+  --chip: var(--pending-m3);
   --chip-r: 2px;
   --link: 22px;
   --link-lh: 28px;
-  --link-ink: var(--ink);
+  --link-ink: var(--role-text);
   --links-cols: 6 / -1;
   --links-y: 388px;
 }
 
 [data-bp="surface"] :is(.pf-stage, .glass-sheen) {
-  --ground: radial-gradient(1197px 616px at 648px 400px, rgb(197 194 185 / 0) 39%, #fff 76%);
+  --ground: radial-gradient(1197px 616px at 648px 400px, rgb(197 194 185 / 0) 39%, var(--white) 76%);
   --veil: radial-gradient(1430px 1030px at 1512px 1028px, #757575 20%, rgb(219 219 219 / 0) 100%),
-    linear-gradient(159.9deg, rgb(0 0 0 / 0) 19.5%, #000 80.4%);
+    linear-gradient(159.9deg, rgb(0 0 0 / 0) 19.5%, var(--pending-m2) 80.4%);
   --veil-x: -72px;
   --veil-y: -80px;
   --veil-w: 1440px;
@@ -99,9 +99,9 @@
 }
 
 [data-bp="tablet"] :is(.pf-stage, .glass-sheen) {
-  --ground: radial-gradient(941px 477px at 510px 310px, rgb(197 194 185 / 0) 39%, #fff 76%);
+  --ground: radial-gradient(941px 477px at 510px 310px, rgb(197 194 185 / 0) 39%, var(--white) 76%);
   --veil: radial-gradient(1125px 799px at 1190px 797px, #757575 20%, rgb(219 219 219 / 0) 100%),
-    linear-gradient(159.6deg, rgb(0 0 0 / 0) 19.8%, #000 80.3%);
+    linear-gradient(159.6deg, rgb(0 0 0 / 0) 19.8%, var(--pending-m2) 80.3%);
   --veil-x: -57px;
   --veil-y: -62px;
   --veil-w: 1133px;
@@ -135,9 +135,9 @@
 /* Portrait: the veil covers the lower part only, and hangs from the glass's
    foot, so a taller screen still darkens toward the bottom. */
 [data-bp="ipad"] :is(.pf-stage, .glass-sheen) {
-  --ground: radial-gradient(627px 732px at 331px 503px, rgb(197 194 185 / 0) 39%, #fff 76%);
+  --ground: radial-gradient(627px 732px at 331px 503px, rgb(197 194 185 / 0) 39%, var(--white) 76%);
   --veil: radial-gradient(718px 402px at 564px 518px, rgb(117 117 117 / 0.5) 20%, rgb(219 219 219 / 0) 89%),
-    linear-gradient(rgb(0 0 0 / 0) 7%, #000 71%);
+    linear-gradient(rgb(0 0 0 / 0) 7%, var(--pending-m2) 71%);
   --veil-x: -41px;
   --veil-w: 744px;
   --veil-h: 744px;
@@ -163,15 +163,15 @@
   --facts-y: 217px;
   --facts-w: 459px;
   --link: 16px;
-  --link-ink: #e8e8e8; /* over the veil, not the glass */
+  --link-ink: var(--pending-m4); /* over the veil, not the glass */
   --links-cols: 1 / -1;
   --links-y: 461px;
 }
 
 [data-bp="iphone"] :is(.pf-stage, .glass-sheen) {
-  --ground: radial-gradient(337px 560px at 177px 401px, rgb(197 194 185 / 0) 39%, #fff 76%);
+  --ground: radial-gradient(337px 560px at 177px 401px, rgb(197 194 185 / 0) 39%, var(--white) 76%);
   --veil: radial-gradient(420px 282px at 305px 417px, rgb(117 117 117 / 0.5) 20%, rgb(219 219 219 / 0) 89%),
-    linear-gradient(rgb(0 0 0 / 0) 7%, #000 71%);
+    linear-gradient(rgb(0 0 0 / 0) 7%, var(--pending-m2) 71%);
   --veil-x: -24px;
   --veil-w: 402px;
   --veil-h: 599px;
@@ -200,7 +200,7 @@
   --facts-w: auto; /* the chips hug their text here */
   --link: 16px;
   --link-lh: 20px;
-  --link-ink: #e8e8e8;
+  --link-ink: var(--pending-m4);
   --links-cols: 1 / -1;
   --links-y: 235px;
 }
@@ -209,7 +209,7 @@
    On the eyepiece glass, not in this section: drawn on the sheet, they slid
    in with a hard edge against the next section during a travel. The glass
    is fixed, so they crossfade with its colour instead (FRAMINGS.perfil.sheen,
-   whose ground is Figma's #d9d9d9). Placed and scaled like SectionStage, so
+   whose ground is Figma's var(--mist)). Placed and scaled like SectionStage, so
    the numbers above stay Figma pixels. The feed now runs over the veil (in
    Figma it ran under it): the price of no seam. */
 
@@ -302,8 +302,8 @@
 .pf-feed__haze {
   position: absolute;
   inset: 0;
-  -webkit-mask-image: linear-gradient(transparent 32%, #000);
-  mask-image: linear-gradient(transparent 32%, #000);
+  -webkit-mask-image: linear-gradient(transparent 32%, var(--pending-m2));
+  mask-image: linear-gradient(transparent 32%, var(--pending-m2));
 }
 
 /* Film advance (design, 2026-10-13): instead of a steady drift, each column

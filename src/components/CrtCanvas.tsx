@@ -43,7 +43,7 @@ export default function CrtCanvas() {
       ctx.putImageData(grain, 0, 0);
 
       // scanlines on top: one dark line every 3px
-      ctx.fillStyle = "rgb(0 0 0 / 0.16)";
+      ctx.fillStyle = "rgb(0 0 0 / 0.16)"; // mirror of --pending-m2 (-> --black, PR 2) + alpha
       for (let y = 0; y < h; y += 3) ctx.fillRect(0, y, w, 1);
     };
 

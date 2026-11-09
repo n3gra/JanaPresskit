@@ -24,7 +24,7 @@ declare global {
   }
 }
 
-const COLOR = "#cf2417";
+const COLOR = "#cf2417"; // mirror of --signal-deep; the widget takes a literal (also in WIDGET_SRC)
 
 export const WIDGET_SRC = (url: string) =>
   `https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}` +
