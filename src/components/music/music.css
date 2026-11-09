@@ -84,9 +84,7 @@
 
   /* the queue */
   --item-h: 80px;
-  --item-title: 24px;
-  --item-meta: 18px;
-  --item-dur: 18px;
+  --item-dur: var(--type-meta-size);
   --queue-pad: 0px; /* item inset inside its columns */
   --queue-cols: 1 / span 3;
   --control-cols: 3 / span 3;
@@ -127,9 +125,7 @@
   --disc-y: 77px;
 
   --item-h: 56px;
-  --item-title: 16px;
-  --item-meta: 14px;
-  --item-dur: 18px;
+  --item-dur: 18px; /* pendiente PR3 · S6 (target --type-meta-size, 14) */
   --deck-gap: 24px;
 }
 
@@ -161,9 +157,7 @@
   --face-foot: calc(var(--ctl-foot) - var(--ctl-pad) - 7px); /* + key padding 4 */
 
   --item-h: 56px;
-  --item-title: 16px;
-  --item-meta: 14px;
-  --item-dur: 18px;
+  --item-dur: 18px; /* pendiente PR3 · S6 (target --type-meta-size, 14) */
   --queue-cols: 1 / -1;
   --control-cols: 1 / -1;
   --deck-gap: 16px;
@@ -434,9 +428,10 @@
 }
 .mp-item__title {
   overflow: hidden;
-  font-size: var(--item-title);
-  font-weight: 500;
-  line-height: 1.25;
+  font-family: var(--type-title-family);
+  font-size: var(--type-title-size);
+  font-weight: var(--type-title-weight);
+  line-height: var(--type-title-leading);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -445,8 +440,9 @@
   align-items: center;
   gap: 8px;
   color: var(--mist);
-  font-size: var(--item-meta);
-  line-height: 1.28;
+  font-family: var(--type-meta-family);
+  font-size: var(--type-meta-size);
+  line-height: 1.28; /* pendiente PR3 · V8a (target --type-meta-leading, 1.25) */
   white-space: nowrap;
 }
 .mp-item__source {

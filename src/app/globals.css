@@ -38,6 +38,38 @@
   --pending-m3: #a6a39c; /* -> screen (hero ground, player border, Perfil chip; was --sf-300) */
   --pending-m4: #e8e8e8; /* -> paper  (menu/HUD/Perfil light text; was --menu-text) */
 
+  /* ---- Type: constants of the 6 roles (CSS only, ADR 0011) ----------------
+     Only the size changes between modes (blocks below); family, weight,
+     leading, tracking never do, so they live here once. Names follow the rule
+     type/{rol}/{prop} -> --type-{rol}-{prop} (handoff/figma/name-map.json).
+     Where the code still differs from a role's target, the consumer keeps its
+     as-built value locally, marked `pendiente PR3 · S#` / `V#` (ADR 0008). */
+  --type-nav-family: var(--font-oswald), sans-serif;
+  --type-nav-weight: 400;
+  --type-nav-leading: 1.1;
+  --type-nav-tracking: 0.02em;
+  --type-caption-family: var(--font-oswald), sans-serif;
+  --type-caption-weight: 400;
+  --type-caption-leading: 1;
+  --type-caption-tracking: 0.12em;
+  --type-title-family: var(--font-oxanium), sans-serif;
+  --type-title-weight: 500;
+  --type-title-leading: 1.25;
+  --type-title-tracking: 0em;
+  --type-meta-family: var(--font-oxanium), sans-serif;
+  --type-meta-weight: 400;
+  --type-meta-leading: 1.25;
+  --type-meta-tracking: 0em;
+  --type-lead-family: var(--font-oxanium), sans-serif;
+  --type-lead-weight: 600;
+  --type-lead-leading: 28px;
+  --type-lead-tracking: 0em;
+  --type-body-family: var(--font-oxanium), sans-serif;
+  --type-body-weight: 600;
+  --type-body-leading: 1.27;
+  --type-body-tracking: 0em;
+  --type-label-weight: 400; /* the uppercase label variant of lead and body */
+
   /* One timing for every click (Figma had 1.02s on one item, 0.3s on the rest). */
   --ease-click: cubic-bezier(0.22, 1, 0.36, 1);
 
@@ -53,6 +85,32 @@
      differently from the glass it shows through. */
   --stage-max-w: 1920px;
   --stage-max-h: 1200px;
+}
+
+/* ---- Type: sizes, one value per mode (ADR 0011, modeMap in name-map.json) ----
+   amplio = desktop + surface; compacto = tablet + ipad + iphone. The mode gives
+   the drawn size, not the rendered one. caption (14) and the amplio/compacto
+   body and the compacto meta are the approved targets; some consumers still
+   render their as-built value until PR 3 (S1, S2, S3, S6). */
+:root,
+[data-bp="desktop"],
+[data-bp="surface"] {
+  --type-nav-size: 24px;
+  --type-caption-size: 14px;
+  --type-title-size: 24px;
+  --type-meta-size: 18px;
+  --type-lead-size: 22px;
+  --type-body-size: 18px;
+}
+[data-bp="tablet"],
+[data-bp="ipad"],
+[data-bp="iphone"] {
+  --type-nav-size: 24px;
+  --type-caption-size: 14px;
+  --type-title-size: 16px;
+  --type-meta-size: 14px;
+  --type-lead-size: 22px;
+  --type-body-size: 16px;
 }
 
 /* Ground of the Viewfinder's root (was Tailwind's bg-black) and of the hero's
@@ -474,10 +532,10 @@ body {
   inset: 0;
   z-index: 35;
   pointer-events: none;
-  font-family: var(--font-oswald), sans-serif;
-  font-size: 13px;
-  line-height: 1;
-  letter-spacing: 0.12em;
+  font-family: var(--type-caption-family);
+  font-size: 13px; /* pendiente PR3 · S1 (target --type-caption-size, 14) */
+  line-height: var(--type-caption-leading);
+  letter-spacing: var(--type-caption-tracking);
   text-transform: uppercase;
   color: #8f8f8f;
   /* The frame halves the empty band between the screen's edge and the glass,
@@ -627,7 +685,7 @@ body {
 }
 /* phones: smaller, and the margins are thin */
 [data-bp="iphone"] .hud {
-  font-size: 10px;
+  font-size: 10px; /* pendiente PR3 · S1 (target --type-caption-size, 14) */
 }
 @media (prefers-reduced-motion: reduce) {
   .hud__rec {
@@ -890,10 +948,10 @@ body {
   padding: 4px;
   white-space: nowrap;
   text-transform: uppercase;
-  font-family: var(--font-oswald), sans-serif;
-  font-size: 24px;
-  line-height: 1.1;
-  letter-spacing: 0.02em;
+  font-family: var(--type-nav-family);
+  font-size: var(--type-nav-size);
+  line-height: var(--type-nav-leading);
+  letter-spacing: var(--type-nav-tracking);
   color: var(--pending-m4);
   transition:
     color 450ms var(--ease-click),
@@ -928,7 +986,7 @@ a.menu-item[data-state="enable"]:active::before {
 .menu-item[data-state="active"] {
   height: 63px;
   padding: 0 16px 0 64px;
-  font-size: 63px;
+  font-size: 63px; /* LOCAL: menu.current, not a role (ADR 0011) */
   line-height: 1;
   letter-spacing: -0.02em;
   color: var(--role-accent);
@@ -938,14 +996,14 @@ a.menu-item[data-state="enable"]:active::before {
 }
 .site-menu[data-compact] .menu-item[data-state="active"] {
   height: 52px;
-  font-size: 52px;
+  font-size: 52px; /* LOCAL: menu.current (ADR 0011) */
 }
 /* The iPhone drawing is 354px wide: sized when "Tech-Rider" at 52px barely
    fit it. That section is gone (2026-10-13); worth revisiting with design. */
 .site-menu[data-narrow][data-place="bar"] .menu-item[data-state="active"] {
   height: 40px;
   padding-left: 24px;
-  font-size: 28px;
+  font-size: 28px; /* LOCAL: menu.current (ADR 0011) */
 }
 
 .menu-logo {
@@ -1091,7 +1149,7 @@ a.menu-item[data-state="enable"]:active::before {
   position: relative;
   padding: 0 12px;
   margin-left: -12px;
-  font-size: 46px;
+  font-size: 46px; /* LOCAL: dialog.channel (was `display`), not a role (ADR 0011) */
   line-height: 1.15;
   letter-spacing: 0.01em;
   transition: color 200ms ease;
@@ -1133,10 +1191,10 @@ a.menu-item[data-state="enable"]:active::before {
   display: flex;
   justify-content: space-between;
   margin: 0;
-  font-family: var(--font-oswald), sans-serif;
-  font-size: 13px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  font-family: var(--type-caption-family);
+  font-size: 13px; /* pendiente PR3 · S1 (target --type-caption-size, 14) */
+  letter-spacing: var(--type-caption-tracking);
+  text-transform: uppercase; /* leading: 1.5 inherited, pendiente PR3 · V8b */
   color: #8f8f8f;
 }
 /* its own tube glass: still scanlines and grain (no motion in the menu) */
@@ -1149,7 +1207,7 @@ a.menu-item[data-state="enable"]:active::before {
 /* tablets: more room */
 [data-bp="ipad"] .channel__name,
 [data-bp="tablet"] .channel__name {
-  font-size: 64px;
+  font-size: 64px; /* LOCAL: dialog.channel (ADR 0011) */
 }
 [data-bp="ipad"] .menu-dialog__list,
 [data-bp="tablet"] .menu-dialog__list {
@@ -1157,7 +1215,7 @@ a.menu-item[data-state="enable"]:active::before {
 }
 /* a short landscape tablet: the list needs the height */
 [data-bp="tablet"] .channel__name {
-  font-size: 52px;
+  font-size: 52px; /* LOCAL: dialog.channel (ADR 0011) */
 }
 
 /* Channels tune in once the screen is open (data-revealed), top down, each

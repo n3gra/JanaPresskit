@@ -56,14 +56,13 @@
   --photo-y: -116px;
   --photo-w: 650px;
 
-  --fact: 22px;
   --facts-cols: 3 / -1;
   --facts-y: 312px;
   --facts-w: 497px;
   --chip: var(--pending-m3);
   --chip-r: 2px;
-  --link: 22px;
-  --link-lh: 28px;
+  --link: 22px; /* pendiente PR3 · S2 (target --type-body-size, 18) */
+  --link-lh: 28px; /* pendiente PR3 · V8c (target --type-body-leading, 1.27) */
   --link-ink: var(--role-text);
   --links-cols: 6 / -1;
   --links-y: 388px;
@@ -94,7 +93,7 @@
 
   --facts-cols: 2 / -1;
   --facts-y: 293px;
-  --link: 16px;
+  --link: 16px; /* pendiente PR3 · S2 (target --type-body-size, 18) */
   --links-y: 373px;
 }
 
@@ -127,7 +126,7 @@
   --facts-y: 171px;
   --facts-w: 394px;
   --chip-r: 4px;
-  --link: 16px;
+  --link: var(--type-body-size);
   --links-cols: 3 / -1;
   --links-y: 322px;
 }
@@ -162,7 +161,7 @@
   --facts-cols: 1 / -1;
   --facts-y: 217px;
   --facts-w: 459px;
-  --link: 16px;
+  --link: var(--type-body-size);
   --link-ink: var(--pending-m4); /* over the veil, not the glass */
   --links-cols: 1 / -1;
   --links-y: 461px;
@@ -198,8 +197,8 @@
   --facts-cols: 1 / -1;
   --facts-y: 111px;
   --facts-w: auto; /* the chips hug their text here */
-  --link: 16px;
-  --link-lh: 20px;
+  --link: var(--type-body-size);
+  --link-lh: 20px; /* pendiente PR3 · V8c */
   --link-ink: var(--pending-m4);
   --links-cols: 1 / -1;
   --links-y: 235px;
@@ -443,16 +442,20 @@
   width: min(var(--facts-w), 100%);
   margin-top: var(--facts-y);
   gap: 24px;
-  font-size: var(--fact);
-  line-height: 28px;
+  --value-weight: var(--type-lead-weight);
+  font-family: var(--type-lead-family);
+  font-size: var(--type-lead-size);
+  line-height: var(--type-lead-leading);
 }
 .pf-group--links {
   grid-column: var(--links-cols);
   justify-self: start;
   margin-top: var(--links-y);
   gap: 12px;
-  font-size: var(--link);
-  line-height: var(--link-lh);
+  --value-weight: var(--type-body-weight);
+  font-family: var(--type-body-family);
+  font-size: var(--link); /* = --type-body-size; desktop and surface pendiente PR3 · S2 */
+  line-height: var(--link-lh); /* pendiente PR3 · V8c where it is a fixed px */
   color: var(--link-ink);
 }
 
@@ -473,7 +476,7 @@
   align-self: flex-start;
 }
 .pf-row dt {
-  font-weight: 400;
+  font-weight: var(--type-label-weight);
   text-transform: uppercase;
 }
 .pf-row dt::after {
@@ -482,7 +485,7 @@
 }
 .pf-row dd {
   margin: 0;
-  font-weight: 600;
+  font-weight: var(--value-weight);
 }
 .pf-row a {
   color: inherit;
