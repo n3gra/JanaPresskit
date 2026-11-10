@@ -145,7 +145,7 @@
   flex: none;
   font-size: 0.727em;
   font-weight: 500;
-  color: #4b4b4b;
+  color: #585959; /* LOCAL: the player's key grey (L4b, report 0002) */
   opacity: 0;
   transition:
     opacity 150ms ease,
