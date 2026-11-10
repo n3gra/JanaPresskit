@@ -33,8 +33,8 @@
      Only the size changes between modes (blocks below); family, weight,
      leading, tracking never do, so they live here once. Names follow the rule
      type/{rol}/{prop} -> --type-{rol}-{prop} (handoff/figma/name-map.json).
-     Where the code still differs from a role's target, the consumer keeps its
-     as-built value locally, marked `pendiente PR3 · S#` / `V#` (ADR 0008). */
+     Components never write a font-size literal: a role, or a LOCAL variable
+     declared and explained in the component (ADR 0011). */
   --type-nav-family: var(--font-oswald), sans-serif;
   --type-nav-weight: 400;
   --type-nav-leading: 1.1;
@@ -524,7 +524,7 @@ body {
   z-index: 35;
   pointer-events: none;
   font-family: var(--type-caption-family);
-  font-size: 13px; /* pendiente PR3 · S1 (target --type-caption-size, 14) */
+  font-size: var(--type-caption-size);
   line-height: var(--type-caption-leading);
   letter-spacing: var(--type-caption-tracking);
   text-transform: uppercase;
@@ -673,10 +673,6 @@ body {
   50% {
     opacity: 0.25;
   }
-}
-/* phones: smaller, and the margins are thin */
-[data-bp="iphone"] .hud {
-  font-size: 10px; /* pendiente PR3 · S1 (target --type-caption-size, 14) */
 }
 @media (prefers-reduced-motion: reduce) {
   .hud__rec {
@@ -1183,9 +1179,10 @@ a.menu-item[data-state="enable"]:active::before {
   justify-content: space-between;
   margin: 0;
   font-family: var(--type-caption-family);
-  font-size: 13px; /* pendiente PR3 · S1 (target --type-caption-size, 14) */
+  font-size: var(--type-caption-size);
+  line-height: var(--type-caption-leading);
   letter-spacing: var(--type-caption-tracking);
-  text-transform: uppercase; /* leading: 1.5 inherited, pendiente PR3 · V8b */
+  text-transform: uppercase;
   color: #8f8f8f;
 }
 /* its own tube glass: still scanlines and grain (no motion in the menu) */

@@ -75,6 +75,11 @@
   --cover: 273px;
   --clock: 40px;
   --clock-lh: 1.2;
+  /* LOCAL type (ADR 0011): cassette and LCD sizes, not system roles */
+  --cassette-title-size: 20px;
+  --cassette-meta-size: 16px; /* duration and the vertical account/tag */
+  --lcd-total-size: 13px;
+  --lcd-line-size: 14px; /* title and meta */
   --lcd-pad: 8px 16px 16px;
   --lcd-gap: 4px;
   --seek-h: 20px;
@@ -84,7 +89,6 @@
 
   /* the queue */
   --item-h: 80px;
-  --item-dur: var(--type-meta-size);
   --queue-pad: 0px; /* item inset inside its columns */
   --queue-cols: 1 / span 3;
   --control-cols: 3 / span 3;
@@ -125,7 +129,6 @@
   --disc-y: 77px;
 
   --item-h: 56px;
-  --item-dur: 18px; /* pendiente PR3 · S6 (target --type-meta-size, 14) */
   --deck-gap: 24px;
 }
 
@@ -157,7 +160,6 @@
   --face-foot: calc(var(--ctl-foot) - var(--ctl-pad) - 7px); /* + key padding 4 */
 
   --item-h: 56px;
-  --item-dur: 18px; /* pendiente PR3 · S6 (target --type-meta-size, 14) */
   --queue-cols: 1 / -1;
   --control-cols: 1 / -1;
   --deck-gap: 16px;
@@ -442,7 +444,7 @@
   color: var(--mist);
   font-family: var(--type-meta-family);
   font-size: var(--type-meta-size);
-  line-height: 1.28; /* pendiente PR3 · V8a (target --type-meta-leading, 1.25) */
+  line-height: var(--type-meta-leading);
   white-space: nowrap;
 }
 .mp-item__source {
@@ -450,7 +452,7 @@
 }
 .mp-item__dur {
   margin-left: auto;
-  font-size: var(--item-dur);
+  font-size: var(--type-meta-size);
 }
 
 /* ---- Cassette visor (what is playing) ---------------------------------------- */
@@ -479,7 +481,7 @@
 }
 .mp-cassette__dur {
   color: var(--mist);
-  font-size: 16px;
+  font-size: var(--cassette-meta-size);
   line-height: 1.25;
 }
 .mp-cassette__cover {
@@ -492,7 +494,7 @@
 .mp-cassette__title {
   overflow: hidden;
   color: var(--screen-light);
-  font-size: 20px;
+  font-size: var(--cassette-title-size);
   font-weight: 500;
   line-height: 1.15;
   text-overflow: ellipsis;
@@ -507,7 +509,7 @@
   gap: 19px;
   margin: 0;
   color: var(--screen-light);
-  font-size: 16px;
+  font-size: var(--cassette-meta-size);
   white-space: nowrap;
   writing-mode: vertical-rl;
   transform: rotate(180deg);
@@ -615,13 +617,13 @@
 }
 .mp-lcd__total {
   color: var(--screen);
-  font-size: 13px;
+  font-size: var(--lcd-total-size);
   font-variant-numeric: tabular-nums;
 }
 .mp-lcd__title,
 .mp-lcd__meta {
   overflow: hidden;
-  font-size: 14px;
+  font-size: var(--lcd-line-size);
   line-height: 1.29;
   text-overflow: ellipsis;
   white-space: nowrap;

@@ -20,20 +20,17 @@
 .ct-stage {
   --rows-cols: 3 / span 4;
   --rows-y: 135px;
-  --row: 22px; /* pendiente PR3 · S2 (target --type-body-size, 18) */
   --row-gap: 24px;
   --row-pad: 24px;
 }
 [data-bp="surface"] .ct-stage {
   --rows-y: 174px; /* the same 48 clear: the box is 161 tall here */
-  --row: var(--type-body-size);
   --row-gap: 18px;
   --row-pad: 18px;
 }
 [data-bp="tablet"] .ct-stage {
   --rows-cols: 2 / span 4;
   --rows-y: 120px;
-  --row: var(--type-body-size);
   --row-gap: 14px;
   --row-pad: 14px;
 }
@@ -43,7 +40,6 @@
 }
 [data-bp="ipad"] .ct-stage {
   --rows-y: 260px;
-  --row: 20px; /* pendiente PR3 · S3 (target --type-body-size, 16) */
 }
 /* Phones: centred in the glass rather than at a set height. A short phone
    (360x675) has a short glass, and from a fixed top the last group ran into
@@ -56,7 +52,6 @@
 }
 [data-bp="iphone"] .ct-stage {
   --rows-y: 0px;
-  --row: 15px; /* pendiente PR3 · S3 (target --type-body-size, 16) */
   --row-gap: 16px;
   --row-pad: 8px;
 }
@@ -73,7 +68,7 @@
   flex-direction: column;
   gap: var(--row-gap);
   font-family: var(--type-body-family);
-  font-size: var(--row); /* = --type-body-size except the pendiente PR3 S2/S3 rows */
+  font-size: var(--type-body-size);
   line-height: var(--type-body-leading);
 }
 

@@ -61,8 +61,6 @@
   --facts-w: 497px;
   --chip: var(--screen);
   --chip-r: 2px;
-  --link: 22px; /* pendiente PR3 · S2 (target --type-body-size, 18) */
-  --link-lh: 28px; /* pendiente PR3 · V8c (target --type-body-leading, 1.27) */
   --link-ink: var(--role-text);
   --links-cols: 6 / -1;
   --links-y: 388px;
@@ -93,7 +91,6 @@
 
   --facts-cols: 2 / -1;
   --facts-y: 293px;
-  --link: 16px; /* pendiente PR3 · S2 (target --type-body-size, 18) */
   --links-y: 373px;
 }
 
@@ -126,7 +123,6 @@
   --facts-y: 171px;
   --facts-w: 394px;
   --chip-r: 4px;
-  --link: var(--type-body-size);
   --links-cols: 3 / -1;
   --links-y: 322px;
 }
@@ -161,7 +157,6 @@
   --facts-cols: 1 / -1;
   --facts-y: 217px;
   --facts-w: 459px;
-  --link: var(--type-body-size);
   --link-ink: var(--role-text-inverse); /* over the veil, not the glass */
   --links-cols: 1 / -1;
   --links-y: 461px;
@@ -197,8 +192,6 @@
   --facts-cols: 1 / -1;
   --facts-y: 111px;
   --facts-w: auto; /* the chips hug their text here */
-  --link: var(--type-body-size);
-  --link-lh: 20px; /* pendiente PR3 · V8c */
   --link-ink: var(--role-text-inverse);
   --links-cols: 1 / -1;
   --links-y: 235px;
@@ -454,8 +447,8 @@
   gap: 12px;
   --value-weight: var(--type-body-weight);
   font-family: var(--type-body-family);
-  font-size: var(--link); /* = --type-body-size; desktop and surface pendiente PR3 · S2 */
-  line-height: var(--link-lh); /* pendiente PR3 · V8c where it is a fixed px */
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-leading);
   color: var(--link-ink);
 }
 
