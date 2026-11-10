@@ -150,7 +150,7 @@ export default function HeroVideo() {
        to the glass instead of being cropped to the monitor. */
     <div
       aria-hidden="true"
-      className="fx fx-footage pointer-events-none absolute inset-0 m-auto h-[min(100%,var(--stage-max-h))] w-[min(100%,var(--stage-max-w))] bg-sf-300"
+      className="fx fx-footage pointer-events-none absolute inset-0 m-auto h-[min(100%,var(--stage-max-h))] w-[min(100%,var(--stage-max-w))] hero-footage-ground"
     >
       <Image
         src="/images/hero-poster.webp"

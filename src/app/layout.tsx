@@ -5,20 +5,21 @@ import "./globals.css";
 
 /**
  * Two families only, each a single variable file (H13): Oxanium is the base and
- * the readouts (Perfil's quote in ExtraLight, its values in SemiBold); Oswald
- * is the menu and the LCD clock (Light).
+ * the readouts (Regular, Medium, SemiBold: --type-*-weight); Oswald is the menu
+ * and the HUD (Regular) and the LCD clock (Light). Only the weights in use are
+ * loaded (ExtraLight 200 and Bold 700 were not, ADR 0011).
  */
 const oxanium = Oxanium({
   variable: "--font-oxanium",
   subsets: ["latin"],
-  weight: ["200", "400", "500", "600"],
+  weight: ["400", "500", "600"],
   display: "swap",
 });
 
 const oswald = Oswald({
   variable: "--font-oswald",
   subsets: ["latin"],
-  weight: ["300", "400", "700"],
+  weight: ["300", "400"],
   display: "swap",
 });
 
@@ -46,7 +47,7 @@ export const metadata: Metadata = {
 };
 
 /* The browser's bars match the black around the eyepiece. */
-export const viewport: Viewport = { themeColor: "#000000" };
+export const viewport: Viewport = { themeColor: "#070706" }; // mirror of --black
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (

@@ -7,34 +7,62 @@
    --------------------------------------------------------------------------- */
 
 :root {
-  --black: #070706;
-  --black-lift: #12110f;
+  /* ---- Color: palette (9) -------------------------------------------------
+     Names and values are the Figma `Color` collection (handoff/figma/name-map.json,
+     ADR 0003/0005). Pure CSS custom properties; deliberately NOT exposed through
+     Tailwind's @theme. */
+  --black: #070706; /* outside the eyepiece */
+  --ink: #0d0d0d;
+  --screen: #aeaaa0; /* the focusing screen's field */
+  --screen-light: #c5c2b9;
+  --mist: #d9d9d9;
+  --paper: #efece4;
+  --white: #ffffff;
+  --signal: #f20000; /* the accent */
+  --signal-deep: #cf2417; /* focus and selection (before: --signal) */
 
-  --screen: #aeaaa0;
-  --screen-hi: #c9c5ba;
-  --screen-lo: #8b877f;
-  --screen-deep: #6b675f;
-  /* Figma variable sf_300: the hero's ground, under the video. */
-  --sf-300: #a6a39c;
+  /* ---- Color: roles (6), aliases of the palette (ADR 0004) ---------------- */
+  --role-ground: var(--black);
+  --role-surface: var(--screen);
+  --role-text: var(--ink);
+  --role-text-inverse: var(--paper);
+  --role-accent: var(--signal);
+  --role-focus: var(--signal-deep);
 
-  /* The menu (Menu_Item in Figma): light type on an ink chip, red when active. */
-  --menu-text: #e8e8e8;
-  --menu-active: #f20000;
+  /* ---- Type: constants of the 6 roles (CSS only, ADR 0011) ----------------
+     Only the size changes between modes (blocks below); family, weight,
+     leading, tracking never do, so they live here once. Names follow the rule
+     type/{rol}/{prop} -> --type-{rol}-{prop} (handoff/figma/name-map.json).
+     Components never write a font-size literal: a role, or a LOCAL variable
+     declared and explained in the component (ADR 0011). */
+  --type-nav-family: var(--font-oswald), sans-serif;
+  --type-nav-weight: 400;
+  --type-nav-leading: 1.1;
+  --type-nav-tracking: 0.02em;
+  --type-caption-family: var(--font-oswald), sans-serif;
+  --type-caption-weight: 400;
+  --type-caption-leading: 1;
+  --type-caption-tracking: 0.12em;
+  --type-title-family: var(--font-oxanium), sans-serif;
+  --type-title-weight: 500;
+  --type-title-leading: 1.25;
+  --type-title-tracking: 0em;
+  --type-meta-family: var(--font-oxanium), sans-serif;
+  --type-meta-weight: 400;
+  --type-meta-leading: 1.25;
+  --type-meta-tracking: 0em;
+  --type-lead-family: var(--font-oxanium), sans-serif;
+  --type-lead-weight: 600;
+  --type-lead-leading: 28px;
+  --type-lead-tracking: 0em;
+  --type-body-family: var(--font-oxanium), sans-serif;
+  --type-body-weight: 600;
+  --type-body-leading: 1.27;
+  --type-body-tracking: 0em;
+  --type-label-weight: 400; /* the uppercase label variant of lead and body */
+
   /* One timing for every click (Figma had 1.02s on one item, 0.3s on the rest). */
   --ease-click: cubic-bezier(0.22, 1, 0.36, 1);
-
-  /* Measured against --screen (#aeaaa0): 8.2:1, 6.6:1, 4.7:1.
-     Nothing below 4.5:1 carries text on the focusing screen. */
-  --ink: #0d0d0d;
-  --ink-soft: #24221e;
-  --ink-faint: #403d35;
-
-  --paper: #efece4;
-  --signal: #cf2417;
-  --signal-hot: #ff512f;
-
-  --rule: color-mix(in srgb, var(--ink) 28%, transparent);
-  --rule-strong: color-mix(in srgb, var(--ink) 52%, transparent);
 
   /* written by the Viewfinder each frame */
   --eye-w: 80vw;
@@ -50,22 +78,43 @@
   --stage-max-h: 1200px;
 }
 
-@theme inline {
-  --color-black: var(--black);
-  --color-screen: var(--screen);
-  --color-screen-hi: var(--screen-hi);
-  --color-screen-lo: var(--screen-lo);
-  --color-screen-deep: var(--screen-deep);
-  --color-sf-300: var(--sf-300);
-  --color-ink: var(--ink);
-  --color-ink-soft: var(--ink-soft);
-  --color-ink-faint: var(--ink-faint);
-  --color-paper: var(--paper);
-  --color-signal: var(--signal);
+/* ---- Type: sizes, one value per mode (ADR 0011, modeMap in name-map.json) ----
+   amplio = desktop + surface; compacto = tablet + ipad + iphone. The mode gives
+   the drawn size, not the rendered one. caption (14) and the amplio/compacto
+   body and the compacto meta are the approved targets; some consumers still
+   render their as-built value until PR 3 (S1, S2, S3, S6). */
+:root,
+[data-bp="desktop"],
+[data-bp="surface"] {
+  --type-nav-size: 24px;
+  --type-caption-size: 14px;
+  --type-title-size: 24px;
+  --type-meta-size: 18px;
+  --type-lead-size: 22px;
+  --type-body-size: 18px;
+}
+[data-bp="tablet"],
+[data-bp="ipad"],
+[data-bp="iphone"] {
+  --type-nav-size: 24px;
+  --type-caption-size: 14px;
+  --type-title-size: 16px;
+  --type-meta-size: 14px;
+  --type-lead-size: 22px;
+  --type-body-size: 16px;
+}
+
+/* Ground of the Viewfinder's root (was Tailwind's bg-black) and of the hero's
+   footage layer (was bg-sf-300, the value now pending M3). */
+.vf-ground {
+  background-color: var(--role-ground);
+}
+.hero-footage-ground {
+  background-color: var(--screen);
 }
 
 html {
-  background: var(--black);
+  background: var(--role-ground);
   scrollbar-width: none;
 }
 html::-webkit-scrollbar {
@@ -73,27 +122,21 @@ html::-webkit-scrollbar {
 }
 
 body {
-  background: var(--black);
-  color: var(--ink);
+  background: var(--role-ground);
+  color: var(--role-text);
   font-family: var(--font-oxanium), sans-serif;
   -webkit-font-smoothing: antialiased;
   overscroll-behavior: none;
 }
 
 ::selection {
-  background: var(--signal);
-  color: var(--paper);
+  background: var(--role-focus);
+  color: var(--role-text-inverse);
 }
 
 :focus-visible {
-  outline: 2px solid var(--signal);
+  outline: 2px solid var(--role-focus);
   outline-offset: 3px;
-}
-
-
-.u-meta-sm {
-  font-size: 0.625rem;
-  letter-spacing: 0.2em;
 }
 
 /* ---- Jana's real wordmark, as a mask so it takes any ink ------------------ */
@@ -124,22 +167,9 @@ body {
 /* The scanned focusing screen. Offset so the metering circle baked into the
    scan sits off to one side instead of behind the reading column. */
 .mat-screen {
-  background-color: var(--screen);
+  background-color: var(--role-surface);
   /* The scanned texture (/textures/viewfinder-ground.webp, cover, centred)
      is off until the final design pass: no textures before then. */
-}
-
-/* Incandescent red — a blurred bloom, the way it reads on the moodboard. */
-.mat-flare {
-  background: radial-gradient(
-    ellipse 60% 45% at 50% 50%,
-    var(--signal-hot) 0%,
-    var(--signal) 36%,
-    color-mix(in srgb, var(--signal) 40%, transparent) 58%,
-    transparent 76%
-  );
-  filter: blur(22px) saturate(1.3);
-  mix-blend-mode: multiply;
 }
 
 /* Photographic plates sit on the screen, graded into it. */
@@ -304,8 +334,8 @@ body {
   transform: var(--lens-m, scale(0));
   background: radial-gradient(
     circle 100px at 50% 50%,
-    #c5c2b9 calc((1 - var(--lens-soft, 0.05)) * 100%),
-    var(--menu-active) 100%,
+    var(--screen-light) calc((1 - var(--lens-soft, 0.05)) * 100%),
+    var(--role-accent) 100%,
     var(--ink) calc((1 + var(--lens-soft, 0.05)) * 100%)
   );
 }
@@ -446,7 +476,7 @@ body {
   pointer-events: none;
 }
 .glass-edge__shade {
-  stroke: #000;
+  stroke: var(--black);
   stroke-opacity: 0.035;
   stroke-width: calc(var(--short, 600px) * 0.3 * var(--k));
 }
@@ -493,10 +523,10 @@ body {
   inset: 0;
   z-index: 35;
   pointer-events: none;
-  font-family: var(--font-oswald), sans-serif;
-  font-size: 13px;
-  line-height: 1;
-  letter-spacing: 0.12em;
+  font-family: var(--type-caption-family);
+  font-size: var(--type-caption-size);
+  line-height: var(--type-caption-leading);
+  letter-spacing: var(--type-caption-tracking);
   text-transform: uppercase;
   color: #8f8f8f;
   /* The frame halves the empty band between the screen's edge and the glass,
@@ -587,7 +617,7 @@ body {
 }
 .hud a:hover,
 .hud a:focus-visible {
-  color: #e8e8e8;
+  color: var(--role-text-inverse);
   text-decoration-color: currentColor;
 }
 .hud a:focus-visible {
@@ -616,7 +646,7 @@ body {
 }
 .hud__play:hover,
 .hud__play:focus-visible {
-  color: #e8e8e8;
+  color: var(--role-text-inverse);
 }
 .hud__play:focus-visible {
   outline: 1px solid currentColor;
@@ -636,17 +666,13 @@ body {
   width: 0.6em;
   height: 0.6em;
   border-radius: 50%;
-  background: var(--menu-active);
+  background: var(--role-accent);
   animation: hud-rec 2s ease-in-out infinite;
 }
 @keyframes hud-rec {
   50% {
     opacity: 0.25;
   }
-}
-/* phones: smaller, and the margins are thin */
-[data-bp="iphone"] .hud {
-  font-size: 10px;
 }
 @media (prefers-reduced-motion: reduce) {
   .hud__rec {
@@ -683,7 +709,7 @@ body {
 .crt__lines {
   top: -3px;
   bottom: 0;
-  background: repeating-linear-gradient(rgb(0 0 0 / 0.16) 0 1px, transparent 1px 3px);
+  background: repeating-linear-gradient(rgb(7 7 6 / 0.16) 0 1px, transparent 1px 3px);
   animation: crt-crawl 0.25s steps(3) infinite;
   will-change: transform;
 }
@@ -737,7 +763,7 @@ body {
   bottom: 0;
   background:
     linear-gradient(rgb(255 255 255 / 0.09), rgb(255 255 255 / 0.09)) 0 18% / 100% 1px no-repeat,
-    linear-gradient(rgb(0 0 0 / 0.2), rgb(0 0 0 / 0.2)) 0 57% / 100% 2px no-repeat,
+    linear-gradient(rgb(7 7 6 / 0.2), rgb(7 7 6 / 0.2)) 0 57% / 100% 2px no-repeat,
     linear-gradient(rgb(255 255 255 / 0.06), rgb(255 255 255 / 0.06)) 0 83% / 100% 1px no-repeat;
   animation: crt-track 3.7s steps(1, end) infinite;
   will-change: transform;
@@ -775,7 +801,7 @@ body {
   }
   .menu-dialog__crt {
     background:
-      repeating-linear-gradient(rgb(0 0 0 / 0.16) 0 1px, transparent 1px 3px),
+      repeating-linear-gradient(rgb(7 7 6 / 0.16) 0 1px, transparent 1px 3px),
       /* the grain at its 8%, baked in: a background has no opacity of its own */
       url("/images/fx/noise-still.webp") 0 0 / 128px 128px;
   }
@@ -909,11 +935,11 @@ body {
   padding: 4px;
   white-space: nowrap;
   text-transform: uppercase;
-  font-family: var(--font-oswald), sans-serif;
-  font-size: 24px;
-  line-height: 1.1;
-  letter-spacing: 0.02em;
-  color: var(--menu-text);
+  font-family: var(--type-nav-family);
+  font-size: var(--type-nav-size);
+  line-height: var(--type-nav-leading);
+  letter-spacing: var(--type-nav-tracking);
+  color: var(--role-text-inverse);
   transition:
     color 450ms var(--ease-click),
     font-size 450ms var(--ease-click),
@@ -947,24 +973,24 @@ a.menu-item[data-state="enable"]:active::before {
 .menu-item[data-state="active"] {
   height: 63px;
   padding: 0 16px 0 64px;
-  font-size: 63px;
+  font-size: 63px; /* LOCAL: menu.current, not a role (ADR 0011) */
   line-height: 1;
   letter-spacing: -0.02em;
-  color: var(--menu-active);
+  color: var(--role-accent);
 }
 .menu-item[data-state="active"]::before {
   border-radius: 4px;
 }
 .site-menu[data-compact] .menu-item[data-state="active"] {
   height: 52px;
-  font-size: 52px;
+  font-size: 52px; /* LOCAL: menu.current (ADR 0011) */
 }
 /* The iPhone drawing is 354px wide: sized when "Tech-Rider" at 52px barely
    fit it. That section is gone (2026-10-13); worth revisiting with design. */
 .site-menu[data-narrow][data-place="bar"] .menu-item[data-state="active"] {
   height: 40px;
   padding-left: 24px;
-  font-size: 28px;
+  font-size: 28px; /* LOCAL: menu.current (ADR 0011) */
 }
 
 .menu-logo {
@@ -993,7 +1019,7 @@ a.menu-item[data-state="enable"]:active::before {
   height: 48px;
   border-radius: 4px;
   background: var(--ink);
-  color: var(--menu-text);
+  color: var(--role-text-inverse);
   cursor: pointer;
 }
 
@@ -1011,7 +1037,7 @@ a.menu-item[data-state="enable"]:active::before {
   border: 0;
   overflow: hidden;
   background: transparent;
-  color: var(--menu-text);
+  color: var(--role-text-inverse);
 }
 .menu-dialog::backdrop {
   background: transparent;
@@ -1023,7 +1049,7 @@ a.menu-item[data-state="enable"]:active::before {
    head and foot; and the tube's glass (.crt) over it, since the dialog lives
    in the top layer, above the page's own. */
 .menu-dialog {
-  background: radial-gradient(ellipse at 50% 45%, #141312 0%, #070706 75%);
+  background: radial-gradient(ellipse at 50% 45%, #141312 0%, var(--black) 75%);
 }
 .menu-dialog__inner {
   --pad-x: calc(var(--eye-x, 24px) + var(--margin, 16px));
@@ -1049,7 +1075,7 @@ a.menu-item[data-state="enable"]:active::before {
 .menu-dialog__mark {
   align-self: flex-start;
   margin-left: calc(1.4 * 18px + 18px);
-  color: var(--menu-text);
+  color: var(--role-text-inverse);
   transition: color 200ms ease;
 }
 .menu-dialog__mark .mark {
@@ -1059,10 +1085,10 @@ a.menu-item[data-state="enable"]:active::before {
 }
 .menu-dialog__mark:hover,
 .menu-dialog__mark:focus-visible {
-  color: var(--menu-active);
+  color: var(--role-accent);
 }
 .menu-dialog__mark:focus-visible {
-  outline: 2px solid var(--menu-text);
+  outline: 2px solid var(--paper);
   outline-offset: 4px;
 }
 [data-bp="ipad"] .menu-dialog__mark .mark {
@@ -1091,7 +1117,7 @@ a.menu-item[data-state="enable"]:active::before {
   padding: 6px 0;
   font-family: var(--font-oswald), sans-serif;
   text-transform: uppercase;
-  color: var(--menu-text);
+  color: var(--role-text-inverse);
   text-decoration: none;
   -webkit-tap-highlight-color: transparent;
 }
@@ -1100,7 +1126,7 @@ a.menu-item[data-state="enable"]:active::before {
   flex: none;
   width: 1.4em;
   font-size: 18px;
-  color: var(--menu-active);
+  color: var(--role-accent);
   visibility: hidden;
 }
 .channel[data-on-air] .channel__cursor {
@@ -1110,7 +1136,7 @@ a.menu-item[data-state="enable"]:active::before {
   position: relative;
   padding: 0 12px;
   margin-left: -12px;
-  font-size: 46px;
+  font-size: 46px; /* LOCAL: dialog.channel (was `display`), not a role (ADR 0011) */
   line-height: 1.15;
   letter-spacing: 0.01em;
   transition: color 200ms ease;
@@ -1135,26 +1161,27 @@ a.menu-item[data-state="enable"]:active::before {
 }
 /* on air: red on its chip, behind the cursor */
 .channel[data-on-air] .channel__name {
-  color: var(--menu-active);
+  color: var(--role-accent);
 }
 .channel[data-on-air] .channel__name::before {
   inset: 0;
-  background: #000;
+  background: var(--black);
 }
 .channel:focus-visible {
   outline: none;
 }
 .channel:focus-visible .channel__name {
-  outline: 2px solid var(--menu-text);
+  outline: 2px solid var(--paper);
   outline-offset: 2px;
 }
 .menu-dialog__foot {
   display: flex;
   justify-content: space-between;
   margin: 0;
-  font-family: var(--font-oswald), sans-serif;
-  font-size: 13px;
-  letter-spacing: 0.12em;
+  font-family: var(--type-caption-family);
+  font-size: var(--type-caption-size);
+  line-height: var(--type-caption-leading);
+  letter-spacing: var(--type-caption-tracking);
   text-transform: uppercase;
   color: #8f8f8f;
 }
@@ -1168,7 +1195,7 @@ a.menu-item[data-state="enable"]:active::before {
 /* tablets: more room */
 [data-bp="ipad"] .channel__name,
 [data-bp="tablet"] .channel__name {
-  font-size: 64px;
+  font-size: 64px; /* LOCAL: dialog.channel (ADR 0011) */
 }
 [data-bp="ipad"] .menu-dialog__list,
 [data-bp="tablet"] .menu-dialog__list {
@@ -1176,7 +1203,7 @@ a.menu-item[data-state="enable"]:active::before {
 }
 /* a short landscape tablet: the list needs the height */
 [data-bp="tablet"] .channel__name {
-  font-size: 52px;
+  font-size: 52px; /* LOCAL: dialog.channel (ADR 0011) */
 }
 
 /* Channels tune in once the screen is open (data-revealed), top down, each
