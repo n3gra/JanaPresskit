@@ -31,7 +31,7 @@
   /* Figma `photo`'s fills: black rising from the foot, a grey glow from the
      bottom-right corner. Its box, on the canvas. */
   --veil: radial-gradient(1907px 1160px at 2017px 1157px, #757575 20%, rgb(219 219 219 / 0) 100%),
-    linear-gradient(156.6deg, rgb(0 0 0 / 0) 23.5%, var(--pending-m2) 79.2%);
+    linear-gradient(156.6deg, rgb(7 7 6 / 0) 23.5%, var(--black) 79.2%);
   --veil-x: -100px;
   --veil-y: -108px;
   --veil-w: 1920px;
@@ -59,7 +59,7 @@
   --facts-cols: 3 / -1;
   --facts-y: 312px;
   --facts-w: 497px;
-  --chip: var(--pending-m3);
+  --chip: var(--screen);
   --chip-r: 2px;
   --link: 22px; /* pendiente PR3 · S2 (target --type-body-size, 18) */
   --link-lh: 28px; /* pendiente PR3 · V8c (target --type-body-leading, 1.27) */
@@ -71,7 +71,7 @@
 [data-bp="surface"] :is(.pf-stage, .glass-sheen) {
   --ground: radial-gradient(1197px 616px at 648px 400px, rgb(197 194 185 / 0) 39%, var(--white) 76%);
   --veil: radial-gradient(1430px 1030px at 1512px 1028px, #757575 20%, rgb(219 219 219 / 0) 100%),
-    linear-gradient(159.9deg, rgb(0 0 0 / 0) 19.5%, var(--pending-m2) 80.4%);
+    linear-gradient(159.9deg, rgb(7 7 6 / 0) 19.5%, var(--black) 80.4%);
   --veil-x: -72px;
   --veil-y: -80px;
   --veil-w: 1440px;
@@ -100,7 +100,7 @@
 [data-bp="tablet"] :is(.pf-stage, .glass-sheen) {
   --ground: radial-gradient(941px 477px at 510px 310px, rgb(197 194 185 / 0) 39%, var(--white) 76%);
   --veil: radial-gradient(1125px 799px at 1190px 797px, #757575 20%, rgb(219 219 219 / 0) 100%),
-    linear-gradient(159.6deg, rgb(0 0 0 / 0) 19.8%, var(--pending-m2) 80.3%);
+    linear-gradient(159.6deg, rgb(7 7 6 / 0) 19.8%, var(--black) 80.3%);
   --veil-x: -57px;
   --veil-y: -62px;
   --veil-w: 1133px;
@@ -136,7 +136,7 @@
 [data-bp="ipad"] :is(.pf-stage, .glass-sheen) {
   --ground: radial-gradient(627px 732px at 331px 503px, rgb(197 194 185 / 0) 39%, var(--white) 76%);
   --veil: radial-gradient(718px 402px at 564px 518px, rgb(117 117 117 / 0.5) 20%, rgb(219 219 219 / 0) 89%),
-    linear-gradient(rgb(0 0 0 / 0) 7%, var(--pending-m2) 71%);
+    linear-gradient(rgb(7 7 6 / 0) 7%, var(--black) 71%);
   --veil-x: -41px;
   --veil-w: 744px;
   --veil-h: 744px;
@@ -162,7 +162,7 @@
   --facts-y: 217px;
   --facts-w: 459px;
   --link: var(--type-body-size);
-  --link-ink: var(--pending-m4); /* over the veil, not the glass */
+  --link-ink: var(--role-text-inverse); /* over the veil, not the glass */
   --links-cols: 1 / -1;
   --links-y: 461px;
 }
@@ -170,7 +170,7 @@
 [data-bp="iphone"] :is(.pf-stage, .glass-sheen) {
   --ground: radial-gradient(337px 560px at 177px 401px, rgb(197 194 185 / 0) 39%, var(--white) 76%);
   --veil: radial-gradient(420px 282px at 305px 417px, rgb(117 117 117 / 0.5) 20%, rgb(219 219 219 / 0) 89%),
-    linear-gradient(rgb(0 0 0 / 0) 7%, var(--pending-m2) 71%);
+    linear-gradient(rgb(7 7 6 / 0) 7%, var(--black) 71%);
   --veil-x: -24px;
   --veil-w: 402px;
   --veil-h: 599px;
@@ -199,7 +199,7 @@
   --facts-w: auto; /* the chips hug their text here */
   --link: var(--type-body-size);
   --link-lh: 20px; /* pendiente PR3 · V8c */
-  --link-ink: var(--pending-m4);
+  --link-ink: var(--role-text-inverse);
   --links-cols: 1 / -1;
   --links-y: 235px;
 }
@@ -301,8 +301,8 @@
 .pf-feed__haze {
   position: absolute;
   inset: 0;
-  -webkit-mask-image: linear-gradient(transparent 32%, var(--pending-m2));
-  mask-image: linear-gradient(transparent 32%, var(--pending-m2));
+  -webkit-mask-image: linear-gradient(transparent 32%, var(--black));
+  mask-image: linear-gradient(transparent 32%, var(--black));
 }
 
 /* Film advance (design, 2026-10-13): instead of a steady drift, each column

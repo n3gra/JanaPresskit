@@ -29,15 +29,6 @@
   --role-accent: var(--signal);
   --role-focus: var(--signal-deep);
 
-  /* ---- Pending PR 2 merges (report 0002, GATE 3: M1-M4 approved) -----------
-     PR 1 is faithful (0 px): these four values still render as they do today.
-     PR 2 points each one at its palette color and deletes the line.
-     Never reference them from anything that is not a pending-merge use. */
-  --pending-m1: #040306; /* -> black  (player panel, Contacto ink) */
-  --pending-m2: #000000; /* -> black  (live channel, rim, shadow/scanline base) */
-  --pending-m3: #a6a39c; /* -> screen (hero ground, player border, Perfil chip; was --sf-300) */
-  --pending-m4: #e8e8e8; /* -> paper  (menu/HUD/Perfil light text; was --menu-text) */
-
   /* ---- Type: constants of the 6 roles (CSS only, ADR 0011) ----------------
      Only the size changes between modes (blocks below); family, weight,
      leading, tracking never do, so they live here once. Names follow the rule
@@ -119,7 +110,7 @@
   background-color: var(--role-ground);
 }
 .hero-footage-ground {
-  background-color: var(--pending-m3);
+  background-color: var(--screen);
 }
 
 html {
@@ -485,7 +476,7 @@ body {
   pointer-events: none;
 }
 .glass-edge__shade {
-  stroke: var(--pending-m2);
+  stroke: var(--black);
   stroke-opacity: 0.035;
   stroke-width: calc(var(--short, 600px) * 0.3 * var(--k));
 }
@@ -626,7 +617,7 @@ body {
 }
 .hud a:hover,
 .hud a:focus-visible {
-  color: var(--pending-m4);
+  color: var(--role-text-inverse);
   text-decoration-color: currentColor;
 }
 .hud a:focus-visible {
@@ -655,7 +646,7 @@ body {
 }
 .hud__play:hover,
 .hud__play:focus-visible {
-  color: var(--pending-m4);
+  color: var(--role-text-inverse);
 }
 .hud__play:focus-visible {
   outline: 1px solid currentColor;
@@ -722,7 +713,7 @@ body {
 .crt__lines {
   top: -3px;
   bottom: 0;
-  background: repeating-linear-gradient(rgb(0 0 0 / 0.16) 0 1px, transparent 1px 3px);
+  background: repeating-linear-gradient(rgb(7 7 6 / 0.16) 0 1px, transparent 1px 3px);
   animation: crt-crawl 0.25s steps(3) infinite;
   will-change: transform;
 }
@@ -776,7 +767,7 @@ body {
   bottom: 0;
   background:
     linear-gradient(rgb(255 255 255 / 0.09), rgb(255 255 255 / 0.09)) 0 18% / 100% 1px no-repeat,
-    linear-gradient(rgb(0 0 0 / 0.2), rgb(0 0 0 / 0.2)) 0 57% / 100% 2px no-repeat,
+    linear-gradient(rgb(7 7 6 / 0.2), rgb(7 7 6 / 0.2)) 0 57% / 100% 2px no-repeat,
     linear-gradient(rgb(255 255 255 / 0.06), rgb(255 255 255 / 0.06)) 0 83% / 100% 1px no-repeat;
   animation: crt-track 3.7s steps(1, end) infinite;
   will-change: transform;
@@ -814,7 +805,7 @@ body {
   }
   .menu-dialog__crt {
     background:
-      repeating-linear-gradient(rgb(0 0 0 / 0.16) 0 1px, transparent 1px 3px),
+      repeating-linear-gradient(rgb(7 7 6 / 0.16) 0 1px, transparent 1px 3px),
       /* the grain at its 8%, baked in: a background has no opacity of its own */
       url("/images/fx/noise-still.webp") 0 0 / 128px 128px;
   }
@@ -952,7 +943,7 @@ body {
   font-size: var(--type-nav-size);
   line-height: var(--type-nav-leading);
   letter-spacing: var(--type-nav-tracking);
-  color: var(--pending-m4);
+  color: var(--role-text-inverse);
   transition:
     color 450ms var(--ease-click),
     font-size 450ms var(--ease-click),
@@ -1032,7 +1023,7 @@ a.menu-item[data-state="enable"]:active::before {
   height: 48px;
   border-radius: 4px;
   background: var(--ink);
-  color: var(--pending-m4);
+  color: var(--role-text-inverse);
   cursor: pointer;
 }
 
@@ -1050,7 +1041,7 @@ a.menu-item[data-state="enable"]:active::before {
   border: 0;
   overflow: hidden;
   background: transparent;
-  color: var(--pending-m4);
+  color: var(--role-text-inverse);
 }
 .menu-dialog::backdrop {
   background: transparent;
@@ -1088,7 +1079,7 @@ a.menu-item[data-state="enable"]:active::before {
 .menu-dialog__mark {
   align-self: flex-start;
   margin-left: calc(1.4 * 18px + 18px);
-  color: var(--pending-m4);
+  color: var(--role-text-inverse);
   transition: color 200ms ease;
 }
 .menu-dialog__mark .mark {
@@ -1101,7 +1092,7 @@ a.menu-item[data-state="enable"]:active::before {
   color: var(--role-accent);
 }
 .menu-dialog__mark:focus-visible {
-  outline: 2px solid var(--pending-m4);
+  outline: 2px solid var(--paper);
   outline-offset: 4px;
 }
 [data-bp="ipad"] .menu-dialog__mark .mark {
@@ -1130,7 +1121,7 @@ a.menu-item[data-state="enable"]:active::before {
   padding: 6px 0;
   font-family: var(--font-oswald), sans-serif;
   text-transform: uppercase;
-  color: var(--pending-m4);
+  color: var(--role-text-inverse);
   text-decoration: none;
   -webkit-tap-highlight-color: transparent;
 }
@@ -1178,13 +1169,13 @@ a.menu-item[data-state="enable"]:active::before {
 }
 .channel[data-on-air] .channel__name::before {
   inset: 0;
-  background: var(--pending-m2);
+  background: var(--black);
 }
 .channel:focus-visible {
   outline: none;
 }
 .channel:focus-visible .channel__name {
-  outline: 2px solid var(--pending-m4);
+  outline: 2px solid var(--paper);
   outline-offset: 2px;
 }
 .menu-dialog__foot {

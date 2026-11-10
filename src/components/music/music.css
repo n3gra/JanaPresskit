@@ -113,7 +113,7 @@
   /* the queue runs over the disc here, so it gets the Figma's red glow: born
      at the list's bottom-left, by the controls, fading off toward the disc on
      the right (desktop_1440 / tablet_h list_music, axis-aligned) */
-  --queue-glow: radial-gradient(83% 174% at 7% 82%, #ff0004 51%, rgb(255 0 4 / 0) 100%);
+  --queue-glow: radial-gradient(83% 174% at 7% 82%, var(--signal) 51%, rgb(242 0 0 / 0) 100%);
 }
 
 /* Tablet held landscape (tablet_h 447:1619): the compact menu takes a row at
@@ -163,7 +163,7 @@
   --deck-gap: 16px;
   /* born at the list's foot, by the controls, fading up toward the disc
      above it (mobile_v list_music 306:1260: centre 201,186 of 402x208) */
-  --queue-glow: radial-gradient(79% 78% at 50% 89%, #ff0004 51%, rgb(255 0 4 / 0) 100%);
+  --queue-glow: radial-gradient(79% 78% at 50% 89%, var(--signal) 51%, rgb(242 0 0 / 0) 100%);
 }
 [data-bp="ipad"] .mp-stage {
   --disc-s: 518px;
@@ -298,7 +298,7 @@
   top: -3.649%;
   width: 107.3%;
   height: 107.3%;
-  border-color: #ca0000;
+  border-color: var(--signal-deep);
 }
 
 .mp-color {
@@ -315,7 +315,7 @@
 /* Black ring with the spindle hole cut out (222 outer, 74 inner). */
 .mp-hub {
   border-radius: 50%;
-  background: radial-gradient(circle closest-side, transparent 33.3%, #030307 33.6%);
+  background: radial-gradient(circle closest-side, transparent 33.3%, var(--black) 33.6%);
 }
 
 /* Spins only while a set plays; pausing freezes it at the current angle. */
@@ -461,8 +461,8 @@
   box-sizing: border-box;
   height: var(--deck-h);
   padding: 16px 14px;
-  background: var(--pending-m1);
-  border: 2px solid var(--pending-m3);
+  background: var(--black);
+  border: 2px solid var(--screen);
   border-radius: 8px;
 }
 .mp-cassette__inner {
@@ -525,9 +525,9 @@
   background: var(--mist);
   border-radius: var(--ctl-radius, 8px);
   box-shadow:
-    0 0 0 2px var(--pending-m3),
-    0 4px 4px 0 rgba(0, 0, 0, 0.3),
-    0 8px 12px 6px rgba(0, 0, 0, 0.15);
+    0 0 0 2px var(--screen),
+    0 4px 4px 0 rgb(7 7 6 / 0.3),
+    0 8px 12px 6px rgb(7 7 6 / 0.15);
 }
 .mp-control__top {
   display: flex;
@@ -545,8 +545,8 @@
   height: 100%;
   padding: var(--lcd-pad);
   color: var(--mist);
-  background: var(--pending-m1);
-  border: 2px solid var(--pending-m3);
+  background: var(--black);
+  border: 2px solid var(--screen);
   border-radius: 4px;
   text-shadow: 0 0 4px rgba(217, 217, 217, 0.5);
   overflow: hidden;
@@ -567,7 +567,7 @@
 }
 .mp-scene[data-playing="true"] .mp-lcd__time {
   color: var(--role-accent);
-  text-shadow: 0 0 6px rgb(255 0 4 / 0.6);
+  text-shadow: 0 0 6px rgb(242 0 0 / 0.6);
 }
 /* Loading (useSoundCloud's `pending`): the clock reads CARGANDO and three dots
    come in one by one, each always holding its place so nothing shifts. A dot
@@ -614,7 +614,7 @@
   justify-content: space-between;
 }
 .mp-lcd__total {
-  color: var(--pending-m3);
+  color: var(--screen);
   font-size: 13px;
   font-variant-numeric: tabular-nums;
 }
@@ -769,7 +769,7 @@
   height: 100%;
   background: #1c1b1f;
   border-radius: 99px;
-  box-shadow: 0 0 0 2px var(--pending-m3);
+  box-shadow: 0 0 0 2px var(--screen);
 }
 .mp-vol__thumb {
   position: absolute;
@@ -800,7 +800,7 @@
   width: 12px;
   height: 100%;
   padding: 2px;
-  background: var(--pending-m1);
+  background: var(--black);
   border-radius: 2px;
 }
 .mp-vu__seg {
@@ -811,7 +811,7 @@
      a meter and not as two black bars; lit, it is its own colour. */
   background: color-mix(in srgb, var(--c) calc(22% + 78% * var(--i)), #2b2a2e);
   border-radius: 1px;
-  box-shadow: 0 0 calc(var(--i) * 5px) calc(var(--i) * 0.6px) rgb(255 0 4 / calc(var(--i) * 0.85));
+  box-shadow: 0 0 calc(var(--i) * 5px) calc(var(--i) * 0.6px) rgb(242 0 0 / calc(var(--i) * 0.85));
 }
 /* the last lamps run hotter, like the top of a real meter */
 .mp-vu__seg:nth-child(n + 14) {
@@ -824,19 +824,19 @@
 .mp-vu__seg[data-peak="true"] {
   --c: #ffc0cb;
   background: var(--c);
-  box-shadow: 0 0 5px 1px rgb(255 0 4 / 0.9);
+  box-shadow: 0 0 5px 1px rgb(242 0 0 / 0.9);
 }
 
 /* ---- Keys -------------------------------------------------------------------- */
 
 .mp-keys {
-  --sh-rest: 0 2px 6px 2px rgba(0, 0, 0, 0.5), 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --sh-rest: 0 2px 6px 2px rgb(7 7 6 / 0.5), 0 1px 2px 0 rgb(7 7 6 / 0.3);
   display: flex;
   gap: 2px;
   box-sizing: border-box;
   height: var(--keys-h);
   padding: 2px;
-  border: 1px solid var(--pending-m3);
+  border: 1px solid var(--screen);
   border-radius: var(--keys-radius, 4px);
 }
 
@@ -888,44 +888,44 @@
   width: 100%;
   height: 100%;
   padding-top: 16px;
-  background: var(--pending-m4);
+  background: var(--paper);
   border-radius: 4px;
 }
 
 /* States follow the Figma set "Component 1" (303:432):
    enable -> hover lightens the face (the shadow does not move) -> press darkens the key. */
 .mp-key:hover:not(:disabled):not(:active) .mp-key__face {
-  background: #fefefe;
+  background: var(--white);
 }
 
 /* play/pause while playing ("active play"): rests pressed in, a touch lighter than a real press */
 .mp-key--pp[data-playing="true"] {
-  background: linear-gradient(to bottom, var(--screen-light) 6%, #696868 95%);
+  background: linear-gradient(to bottom, var(--screen-light) 6%, #676767 95%);
   box-shadow: none;
 }
 .mp-key--pp[data-playing="true"] .mp-key__face {
   background:
     linear-gradient(to bottom, rgba(205, 207, 204, 0.5) 57%, rgba(42, 42, 42, 0.5) 100%),
-    var(--pending-m4);
+    var(--paper);
 }
 /* "hover on": still pressed in, face brightens */
 .mp-key--pp[data-playing="true"]:hover:not(:disabled):not(:active) .mp-key__face {
   background:
     linear-gradient(to bottom, rgba(205, 207, 204, 0.45) 57%, rgba(42, 42, 42, 0.45) 100%),
-    #fefefe;
+    var(--white);
 }
 
 /* pressed ("press on" / "press to play" / "press to pause"): the darkest state */
 .mp-key--step:active,
 .mp-key--pp[data-playing]:active {
-  background: linear-gradient(to bottom, var(--screen-light) 6%, #535353 95%);
+  background: linear-gradient(to bottom, var(--screen-light) 6%, #585959 95%);
   box-shadow: none;
 }
 .mp-key--step:active .mp-key__face,
 .mp-key--pp[data-playing]:active .mp-key__face {
   background:
     linear-gradient(to bottom, rgba(205, 207, 204, 0.5) 57%, rgba(42, 42, 42, 0.5) 100%),
-    var(--pending-m4);
+    var(--paper);
 }
 
 /* Icons: grey when off, pink with a red glow when lit. */
@@ -956,7 +956,7 @@
 .mp-key--pp[data-playing="false"]:active .mp-ico--play,
 .mp-key--pp[data-playing="true"]:active .mp-ico--pause {
   color: #ffc0cb;
-  filter: drop-shadow(0 0 4px #ff0004);
+  filter: drop-shadow(0 0 4px var(--signal));
 }
 /* while pressed, the glyph that was lit goes dark and the other one lights */
 .mp-key--pp[data-playing="false"]:active .mp-ico--pause,

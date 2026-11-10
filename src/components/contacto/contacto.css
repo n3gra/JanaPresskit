@@ -11,7 +11,7 @@
   inset: 0;
   overflow: hidden;
   font-family: var(--font-oxanium), sans-serif;
-  color: var(--pending-m1);
+  color: var(--black);
 }
 
 /* Desktop: the box centred on the glass, as in Figma, which on 8 columns is

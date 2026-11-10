@@ -47,7 +47,7 @@ export const metadata: Metadata = {
 };
 
 /* The browser's bars match the black around the eyepiece. */
-export const viewport: Viewport = { themeColor: "#000000" }; // mirror of --pending-m2 (-> --black, PR 2)
+export const viewport: Viewport = { themeColor: "#070706" }; // mirror of --black
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
